@@ -429,6 +429,106 @@
             color: white;
         }
 
+        /* Currency Selector */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6e6e73;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: #f5f5f7;
+        }
+
+        .currency-list {
+            display: grid;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .currency-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .currency-item:hover {
+            background: #f5f5f7;
+            border-color: #0051D5;
+        }
+
+        .currency-item.active {
+            background: #e6f0ff;
+            border-color: #0051D5;
+        }
+
+        .currency-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .currency-symbol {
+            font-size: 24px;
+            font-weight: 600;
+            width: 36px;
+            text-align: center;
+        }
+
+        .currency-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .currency-code {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1d1d1f;
+        }
+
+        .currency-name {
+            font-size: 12px;
+            color: #6e6e73;
+        }
+
+        .currency-check {
+            font-size: 20px;
+            color: #0051D5;
+            display: none;
+        }
+
+        .currency-item.active .currency-check {
+            display: block;
+        }
+
         /* Success Message */
         .success-message {
             position: fixed;
@@ -661,6 +761,37 @@
         body.dark-mode .status {
             color: #30d158;
         }
+
+        body.dark-mode .currency-item {
+            background: #1c1c1e;
+            border-color: #38383a;
+        }
+
+        body.dark-mode .currency-item:hover {
+            background: #2c2c2e;
+            border-color: #0051D5;
+        }
+
+        body.dark-mode .currency-item.active {
+            background: #1a2a3a;
+            border-color: #0051D5;
+        }
+
+        body.dark-mode .currency-code {
+            color: #f5f5f7;
+        }
+
+        body.dark-mode .currency-name {
+            color: #98989d;
+        }
+
+        body.dark-mode .close-btn {
+            color: #98989d;
+        }
+
+        body.dark-mode .close-btn:hover {
+            background: #2c2c2e;
+        }
     </style>
 </head>
 <body>
@@ -700,7 +831,7 @@
         <div class="summary">
             <div class="summary-card">
                 <div class="summary-label">This Month</div>
-                <div class="summary-value" id="monthNet">₹0</div>
+                <div class="summary-value" id="monthNet">0</div>
             </div>
             <div class="summary-card">
                 <div class="summary-label">Total Entries</div>
@@ -708,11 +839,11 @@
             </div>
             <div class="summary-card">
                 <div class="summary-label">Income</div>
-                <div class="summary-value positive" id="monthIncome">₹0</div>
+                <div class="summary-value positive" id="monthIncome">0</div>
             </div>
             <div class="summary-card">
                 <div class="summary-label">Expenses</div>
-                <div class="summary-value negative" id="monthExpense">₹0</div>
+                <div class="summary-value negative" id="monthExpense">0</div>
             </div>
         </div>
 
@@ -723,9 +854,26 @@
                 <span>Export CSV</span>
             </button>
             <div class="toolbar-spacer"></div>
+            <button class="toolbar-btn" onclick="toggleCurrencySelector()" aria-label="Change currency" id="currencyBtn">
+                <span id="currencySymbol">₹</span>
+                <span id="currencyCode">INR</span>
+            </button>
             <button class="toolbar-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" id="darkModeBtn">
                 <span id="darkModeIcon">🌙</span>
             </button>
+        </div>
+
+        <!-- Currency Selector Modal -->
+        <div id="currencyModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Select Currency</h3>
+                    <button class="close-btn" onclick="closeCurrencySelector()" aria-label="Close">✕</button>
+                </div>
+                <div class="currency-list" id="currencyList">
+                    <!-- Currency options will be populated by JavaScript -->
+                </div>
+            </div>
         </div>
 
         <!-- Tab Navigation -->
@@ -839,6 +987,98 @@
                 'Other Expense'
             ]
         };
+
+        // Currency definitions
+        const currencies = {
+            USD: { symbol: '$', name: 'US Dollar' },
+            EUR: { symbol: '€', name: 'Euro' },
+            GBP: { symbol: '£', name: 'British Pound' },
+            INR: { symbol: '₹', name: 'Indian Rupee' },
+            JPY: { symbol: '¥', name: 'Japanese Yen' },
+            CNY: { symbol: '¥', name: 'Chinese Yuan' },
+            AUD: { symbol: 'A$', name: 'Australian Dollar' },
+            CAD: { symbol: 'C$', name: 'Canadian Dollar' },
+            CHF: { symbol: 'Fr', name: 'Swiss Franc' },
+            THB: { symbol: '฿', name: 'Thai Baht' },
+            SGD: { symbol: 'S$', name: 'Singapore Dollar' },
+            HKD: { symbol: 'HK$', name: 'Hong Kong Dollar' },
+            NZD: { symbol: 'NZ$', name: 'New Zealand Dollar' },
+            KRW: { symbol: '₩', name: 'South Korean Won' },
+            MYR: { symbol: 'RM', name: 'Malaysian Ringgit' },
+            PHP: { symbol: '₱', name: 'Philippine Peso' },
+            IDR: { symbol: 'Rp', name: 'Indonesian Rupiah' },
+            VND: { symbol: '₫', name: 'Vietnamese Dong' },
+            AED: { symbol: 'د.إ', name: 'UAE Dirham' },
+            SAR: { symbol: 'SR', name: 'Saudi Riyal' }
+        };
+
+        // Get current currency
+        function getCurrency() {
+            const saved = localStorage.getItem('currency');
+            return saved && currencies[saved] ? saved : 'INR';
+        }
+
+        // Set currency
+        function setCurrency(code) {
+            localStorage.setItem('currency', code);
+            updateCurrencyDisplay();
+            updateUI();
+            showMessage(`Currency changed to ${currencies[code].name}`);
+        }
+
+        // Get currency symbol
+        function getCurrencySymbol() {
+            const code = getCurrency();
+            return currencies[code].symbol;
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return `${getCurrencySymbol()}${formatNumber(amount)}`;
+        }
+
+        // Update currency display in UI
+        function updateCurrencyDisplay() {
+            const code = getCurrency();
+            const currency = currencies[code];
+            document.getElementById('currencySymbol').textContent = currency.symbol;
+            document.getElementById('currencyCode').textContent = code;
+            document.querySelector('label[for="amount"]').textContent = `Amount (${currency.symbol})`;
+        }
+
+        // Toggle currency selector
+        function toggleCurrencySelector() {
+            const modal = document.getElementById('currencyModal');
+            const list = document.getElementById('currencyList');
+            const currentCode = getCurrency();
+
+            // Populate currency list
+            list.innerHTML = Object.entries(currencies).map(([code, curr]) => `
+                <div class="currency-item ${code === currentCode ? 'active' : ''}" onclick="selectCurrency('${code}')">
+                    <div class="currency-info">
+                        <div class="currency-symbol">${curr.symbol}</div>
+                        <div class="currency-details">
+                            <div class="currency-code">${code}</div>
+                            <div class="currency-name">${curr.name}</div>
+                        </div>
+                    </div>
+                    <div class="currency-check">✓</div>
+                </div>
+            `).join('');
+
+            modal.style.display = 'flex';
+        }
+
+        // Close currency selector
+        function closeCurrencySelector() {
+            document.getElementById('currencyModal').style.display = 'none';
+        }
+
+        // Select currency
+        function selectCurrency(code) {
+            setCurrency(code);
+            closeCurrencySelector();
+        }
 
         // Select transaction type (toggle button)
         function selectType(type) {
@@ -971,11 +1211,11 @@
 
             const net = income - expense;
 
-            document.getElementById('monthNet').textContent = `₹${formatNumber(net)}`;
+            document.getElementById('monthNet').textContent = formatCurrency(net);
             document.getElementById('monthNet').className = 'summary-value ' + (net >= 0 ? 'positive' : 'negative');
             document.getElementById('totalEntries').textContent = transactions.length;
-            document.getElementById('monthIncome').textContent = `₹${formatNumber(income)}`;
-            document.getElementById('monthExpense').textContent = `₹${formatNumber(expense)}`;
+            document.getElementById('monthIncome').textContent = formatCurrency(income);
+            document.getElementById('monthExpense').textContent = formatCurrency(expense);
         }
 
         // Update transactions list
@@ -1018,7 +1258,7 @@
                             <div class="transaction-date">${formatDate(t.date)}</div>
                         </div>
                         <div class="transaction-amount ${amountClass}">
-                            ${sign}₹${formatNumber(t.amount)}
+                            ${sign}${formatCurrency(t.amount)}
                         </div>
                         <div class="transaction-actions">
                             <button class="action-btn edit-btn" onclick="editTransaction(${t.id})">✏️</button>
@@ -1128,15 +1368,15 @@
                         <div style="padding: 12px 16px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="color: #6e6e73;">Income</span>
-                                <span class="positive">₹${formatNumber(data.income)}</span>
+                                <span class="positive">${formatCurrency(data.income)}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="color: #6e6e73;">Expenses</span>
-                                <span class="negative">₹${formatNumber(data.expense)}</span>
+                                <span class="negative">${formatCurrency(data.expense)}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #f5f5f7;">
                                 <span style="font-weight: 600;">Net</span>
-                                <span class="${netClass}" style="font-weight: 600;">₹${formatNumber(net)}</span>
+                                <span class="${netClass}" style="font-weight: 600;">${formatCurrency(net)}</span>
                             </div>
                         </div>
                     </div>
@@ -1174,7 +1414,7 @@
                             <div style="display: flex; justify-content: space-between;">
                                 <span style="color: #6e6e73;">Total</span>
                                 <span class="${colorClass}" style="font-weight: 600; font-size: 20px;">
-                                    ₹${formatNumber(data.total)}
+                                    ${formatCurrency(data.total)}
                                 </span>
                             </div>
                         </div>
@@ -1289,7 +1529,8 @@
                 return;
             }
 
-            const headers = ['Date', 'Type', 'Category', 'Amount', 'Notes'];
+            const currencyCode = getCurrency();
+            const headers = ['Date', 'Type', 'Category', `Amount (${currencyCode})`, 'Notes'];
             const rows = transactions.map(t => [
                 t.date,
                 t.type,
@@ -1379,6 +1620,7 @@
         window.addEventListener('load', function() {
             loadData();
             loadDarkMode();
+            updateCurrencyDisplay();
             checkInstallPrompt();
         });
 
