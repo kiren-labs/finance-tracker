@@ -1,0 +1,8 @@
+# Finance Tracker - robots.txt
+# Allow all crawlers to access all content
+
+User-agent: *
+Allow: /
+
+# Sitemap (update this URL when deployed)
+# Sitemap: https://yourusername.github.io/finance-tracker/sitemap.xml
