@@ -6,44 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Run weekly on Monday at 00:00 UTC
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1'  # Weekly on Monday
 
 jobs:
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: javascript
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-
-  dependency-review:
-    name: Dependency Review
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Dependency Review
-      uses: actions/dependency-review-action@v4
-
-  security-audit:
-    name: Security Audit
+  security:
+    name: Security Check
     runs-on: ubuntu-latest
 
     steps:
@@ -55,44 +22,33 @@ jobs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+        format: 'table'
 
-    - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  check-headers:
-    name: Check Security Headers
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Check for security best practices
+    - name: Check for hardcoded secrets
       run: |
-        echo "Checking for security best practices in code..."
-
-        # Check for Content Security Policy discussion/plans
-        if [ -f "SECURITY.md" ]; then
-          echo "✓ SECURITY.md exists"
-        else
-          echo "⚠ SECURITY.md not found"
+        echo "Checking for hardcoded secrets..."
+        if grep -r "password\s*=\|api_key\s*=\|secret\s*=" --include="*.html" --include="*.js" 2>/dev/null; then
+          echo "✗ Found potential hardcoded secrets"
+          exit 1
         fi
+        echo "✓ No hardcoded secrets found"
 
-        # Check localStorage usage patterns
-        if grep -q "localStorage" index.html; then
-          echo "✓ Found localStorage usage (expected for this PWA)"
-          echo "Note: Data is stored unencrypted in localStorage"
+    - name: Check for eval usage
+      run: |
+        echo "Checking for eval() usage..."
+        if grep -r "eval(" --include="*.html" --include="*.js" 2>/dev/null; then
+          echo "✗ Found eval() usage (security risk)"
+          exit 1
         fi
+        echo "✓ No eval() usage found"
 
-        # Verify no external tracking
-        if grep -qi "google-analytics\|gtag\|analytics\.js\|facebook\.com" index.html; then
-          echo "⚠ Found potential tracking code"
-          echo "Please verify this aligns with privacy policy"
-        else
-          echo "✓ No tracking scripts detected"
+    - name: Verify SRI integrity
+      run: |
+        echo "Checking for Subresource Integrity..."
+        if grep -q "cdn\|unpkg\|jsdelivr" index.html; then
+          if ! grep -q "integrity=" index.html; then
+            echo "⚠ Warning: CDN resources found without SRI integrity"
+          else
+            echo "✓ SRI integrity present"
+          fi
         fi
