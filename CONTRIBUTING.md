@@ -366,23 +366,11 @@ Stuck? Need help?
 
 ## 📜 Code of Conduct
 
-### Our Pledge
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
 
-We pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity, experience level, nationality, personal appearance, race, religion, or sexual identity.
+By participating, you are expected to uphold this code. Please report unacceptable behavior by opening an issue or contacting the project maintainers.
 
-### Our Standards
-
-**Positive behavior:**
-- ✅ Being respectful
-- ✅ Accepting constructive criticism
-- ✅ Focusing on what's best for the community
-- ✅ Showing empathy
-
-**Unacceptable behavior:**
-- ❌ Harassment or discrimination
-- ❌ Trolling or insulting comments
-- ❌ Personal or political attacks
-- ❌ Publishing others' private information
+For the full Code of Conduct, see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 

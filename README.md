@@ -5,8 +5,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](VERSION.md)
+[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-purple.svg)](CODE_OF_CONDUCT.md)
+[![Security](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
-**[Live Demo](https://kiren-labs.github.io/finance-tracker/)** | **[Documentation](VERSION.md)** | **[Contributing](CONTRIBUTING.md)**
+**[Live Demo](https://kiren-labs.github.io/finance-tracker/)** | **[Documentation](VERSION.md)** | **[Contributing](CONTRIBUTING.md)** | **[Security](SECURITY.md)**
 
 ---
 
