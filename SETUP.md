@@ -11,7 +11,7 @@ This guide will help you set up the Finance Tracker repository for the first tim
 ```bash
 # On GitHub.com:
 1. Click "New repository"
-2. Name: finance-tracker
+2. Name: finchronicle
 3. Description: "A beautiful, offline-first Progressive Web App for tracking personal finances"
 4. Public repository
 5. DO NOT initialize with README (we have one)
@@ -34,7 +34,7 @@ git add .
 git commit -m "Initial commit: Finance Tracker v3.1.0"
 
 # Add remote (replace kiren-labs with your GitHub username)
-git remote add origin https://github.com/kiren-labs/finance-tracker.git
+git remote add origin https://github.com/kiren-labs/finchronicle.git
 
 # Push to GitHub
 git branch -M main
@@ -52,7 +52,7 @@ git push -u origin main
 5. Folder: / (root)
 6. Click "Save"
 7. Wait 1-2 minutes
-8. Your app will be live at: https://kiren-labs.github.io/finance-tracker/
+8. Your app will be live at: https://kiren-labs.github.io/finchronicle/
 ```
 
 ### 4. Update README with Your URL
@@ -81,7 +81,7 @@ A beautiful, offline-first Progressive Web App for tracking personal finances
 
 #### Website
 ```
-https://kiren-labs.github.io/finance-tracker/
+https://kiren-labs.github.io/finchronicle/
 ```
 
 #### Topics (Tags)
@@ -89,7 +89,7 @@ Add these topics to make your repo discoverable:
 ```
 pwa
 progressive-web-app
-finance-tracker
+finchronicle
 expense-tracker
 offline-first
 javascript
@@ -155,7 +155,7 @@ Use a screenshot of your app or create a custom banner.
 After setup, your repository should have:
 
 ```
-finance-tracker/
+finchronicle/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md
@@ -201,7 +201,7 @@ Update these in README.md:
 ```markdown
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](VERSION.md)
-[![Live Demo](https://img.shields.io/badge/demo-live-success.svg)](https://kiren-labs.github.io/finance-tracker/)
+[![Live Demo](https://img.shields.io/badge/demo-live-success.svg)](https://kiren-labs.github.io/finchronicle/)
 ```
 
 ### manifest.json URLs
@@ -210,8 +210,8 @@ Update if you change the repository name:
 
 ```json
 {
-  "start_url": "/finance-tracker/",
-  "scope": "/finance-tracker/"
+  "start_url": "/finchronicle/",
+  "scope": "/finchronicle/"
 }
 ```
 
@@ -344,8 +344,8 @@ Add Google Analytics (optional):
 ## 📞 Need Help?
 
 - 📖 Read [CONTRIBUTING.md](CONTRIBUTING.md)
-- 💬 Start a [GitHub Discussion](https://github.com/kiren-labs/finance-tracker/discussions)
-- 🐛 Open an [Issue](https://github.com/kiren-labs/finance-tracker/issues)
+- 💬 Start a [GitHub Discussion](https://github.com/kiren-labs/finchronicle/discussions)
+- 🐛 Open an [Issue](https://github.com/kiren-labs/finchronicle/issues)
 
 ---
 

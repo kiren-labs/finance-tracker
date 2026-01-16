@@ -236,5 +236,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Documentation](VERSION.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [MIT License](LICENSE)
-- [GitHub Repository](https://github.com/kiren-labs/finance-tracker)
-- [Live Demo](https://kiren-labs.github.io/finance-tracker/)
+- [GitHub Repository](https://github.com/kiren-labs/finchronicle)
+- [Live Demo](https://kiren-labs.github.io/finchronicle/)

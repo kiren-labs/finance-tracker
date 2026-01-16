@@ -1,7 +1,7 @@
 # Open Source Compliance Report
 
 **Project**: Finance Tracker PWA
-**Repository**: https://github.com/kiren-labs/finance-tracker
+**Repository**: https://github.com/kiren-labs/finchronicle
 **License**: MIT
 **Report Date**: 2025-01-15
 **Status**: ✅ **COMPLIANT**
