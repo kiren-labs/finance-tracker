@@ -53,7 +53,7 @@ Edit `/offline-tracker/sw.js`:
 
 ```javascript
 // Change this line (line 2):
-const CACHE_NAME = 'finance-tracker-v4';  // ← Increment version
+const CACHE_NAME = 'finchronicle-v4';  // ← Increment version
 ```
 
 ### Step 3: Document Changes
@@ -79,7 +79,7 @@ git push origin main
 
 ### Step 5: Verify Deployment
 
-1. Visit: https://kiren-labs.github.io/finance-tracker/
+1. Visit: https://kiren-labs.github.io/finchronicle/
 2. Check version number in header
 3. Test new features
 

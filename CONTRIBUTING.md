@@ -5,7 +5,7 @@ First off, thank you for considering contributing to Finance Tracker! 🎉 It's 
 ## 🌟 Ways to Contribute
 
 ### 1. Report Bugs 🐛
-Found a bug? Please [open an issue](https://github.com/kiren-labs/finance-tracker/issues/new?template=bug_report.md) with:
+Found a bug? Please [open an issue](https://github.com/kiren-labs/finchronicle/issues/new?template=bug_report.md) with:
 - Clear title and description
 - Steps to reproduce
 - Expected vs actual behavior
@@ -13,7 +13,7 @@ Found a bug? Please [open an issue](https://github.com/kiren-labs/finance-tracke
 - Screenshots if applicable
 
 ### 2. Suggest Features 💡
-Have an idea? [Open a feature request](https://github.com/kiren-labs/finance-tracker/issues/new?template=feature_request.md) with:
+Have an idea? [Open a feature request](https://github.com/kiren-labs/finchronicle/issues/new?template=feature_request.md) with:
 - Clear description of the feature
 - Why it would be useful
 - How it should work
@@ -47,8 +47,8 @@ Have an idea? [Open a feature request](https://github.com/kiren-labs/finance-tra
    - Click "Fork" button on GitHub
    - Clone your fork:
      ```bash
-     git clone https://github.com/kiren-labs/finance-tracker.git
-     cd finance-tracker
+     git clone https://github.com/kiren-labs/finchronicle.git
+     cd finchronicle
      ```
 
 2. **Create a branch**
@@ -136,7 +136,7 @@ When making changes, update versions:
 const APP_VERSION = '3.2.0';  // Update this
 
 // sw.js (line 2)
-const CACHE_NAME = 'finance-tracker-v6';  // Increment this
+const CACHE_NAME = 'finchronicle-v6';  // Increment this
 ```
 
 Versioning rules (Semantic Versioning):
@@ -358,8 +358,8 @@ Test scenarios:
 
 Stuck? Need help?
 
-- 💬 [GitHub Discussions](https://github.com/kiren-labs/finance-tracker/discussions)
-- 🐛 [Open an issue](https://github.com/kiren-labs/finance-tracker/issues)
+- 💬 [GitHub Discussions](https://github.com/kiren-labs/finchronicle/discussions)
+- 🐛 [Open an issue](https://github.com/kiren-labs/finchronicle/issues)
 - 📧 Or just ask in your PR!
 
 ---

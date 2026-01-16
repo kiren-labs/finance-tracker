@@ -9,7 +9,7 @@ The Finance Tracker team takes security seriously. We appreciate your efforts to
 If you discover a security vulnerability, please do one of the following:
 
 1. **GitHub Security Advisories** (Preferred)
-   - Go to the [Security Advisories page](https://github.com/kiren-labs/finance-tracker/security/advisories)
+   - Go to the [Security Advisories page](https://github.com/kiren-labs/finchronicle/security/advisories)
    - Click "New draft security advisory"
    - Provide detailed information about the vulnerability
 

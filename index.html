@@ -6,9 +6,13 @@
     <meta name="description" content="Simple offline-first personal finance tracker. Track expenses and income, filter by category, export to CSV, and manage your money with beautiful charts. Works completely offline, no internet required.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Finance Tracker">
+    <meta name="apple-mobile-web-app-title" content="FinChronicle">
     <meta name="theme-color" content="#0051D5">
-    <title>Finance Tracker - Offline Personal Expense Tracker</title>
+    <title>FinChronicle - Track Your Financial Journey</title>
+
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet" integrity="sha384-RwhG+8423fpoSoUMjpibFzMxLQeaO7oBV45/+IxuLaxxiUOFL9R+OzbK5rBpSazc" crossorigin="anonymous">
     <style>
@@ -913,8 +917,8 @@
         <!-- Header -->
         <header>
             <h1>
-                <span><i class="ri-wallet-3-line"></i> Finance Tracker</span>
-                <span class="version" id="appVersion">v3.1.0</span>
+                <span><i class="ri-wallet-3-line"></i> FinChronicle</span>
+                <span class="version" id="appVersion">v3.2.0</span>
             </h1>
             <div class="status">Offline Ready</div>
         </header>
@@ -993,9 +997,9 @@
 
         <!-- Tab Navigation -->
         <div class="tabs" role="tablist" aria-label="Main navigation">
-            <button class="tab active" onclick="switchTab('add')" role="tab" aria-selected="true" aria-controls="addTab"><i class="ri-add-line"></i> Add</button>
-            <button class="tab" onclick="switchTab('list')" role="tab" aria-selected="false" aria-controls="listTab"><i class="ri-list-check"></i> List</button>
-            <button class="tab" onclick="switchTab('groups')" role="tab" aria-selected="false" aria-controls="groupsTab"><i class="ri-bar-chart-2-line"></i> Groups</button>
+            <button id="add-tab" class="tab active" onclick="switchTab('add')" role="tab" aria-selected="true" aria-controls="addTab"><i class="ri-add-line"></i> Add</button>
+            <button id="list-tab" class="tab" onclick="switchTab('list')" role="tab" aria-selected="false" aria-controls="listTab"><i class="ri-list-check"></i> List</button>
+            <button id="groups-tab" class="tab" onclick="switchTab('groups')" role="tab" aria-selected="false" aria-controls="groupsTab"><i class="ri-bar-chart-2-line"></i> Groups</button>
         </div>
 
         <!-- Add Transaction Tab -->
@@ -1013,7 +1017,7 @@
                                 <i class="ri-arrow-up-circle-line"></i> Income
                             </button>
                         </div>
-                        <input type="hidden" id="type" value="expense" required>
+                        <input type="hidden" id="type" value="expense">
                     </div>
 
                     <div class="form-group">
@@ -1024,6 +1028,7 @@
                     <div class="form-group">
                         <label for="category">Category</label>
                         <select id="category" required>
+                            <option value="" disabled selected>Select category</option>
                             <!-- Categories will be populated dynamically -->
                         </select>
                     </div>
@@ -1074,7 +1079,7 @@
 
     <script>
         // App Version - Update this when releasing new features
-        const APP_VERSION = '3.1.0';
+        const APP_VERSION = '3.2.0';
         const VERSION_KEY = 'app_version';
 
         // Initialize
@@ -1668,7 +1673,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `finance-tracker-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.download = `finchronicle-${new Date().toISOString().slice(0, 10)}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
 
@@ -1745,7 +1750,7 @@
             if (!storedVersion) {
                 // First time install
                 localStorage.setItem(VERSION_KEY, APP_VERSION);
-                console.log(`✨ Finance Tracker ${APP_VERSION} installed!`);
+                console.log(`✨ FinChronicle ${APP_VERSION} installed!`);
             } else if (storedVersion !== APP_VERSION) {
                 // Version has changed - show update notification
                 console.log(`🎉 Updated from ${storedVersion} to ${APP_VERSION}`);
