@@ -1,6 +1,6 @@
-# 💰 Finance Tracker PWA
+# 📖 FinChronicle
 
-> A beautiful, offline-first Progressive Web App for tracking personal finances. No sign-up, no ads, no tracking - just simple expense and income management.
+> A beautiful, offline-first Progressive Web App for chronicling your financial journey. No sign-up, no ads, no tracking - just simple expense and income management. Built by Kiren Labs.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -8,7 +8,7 @@
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-purple.svg)](CODE_OF_CONDUCT.md)
 [![Security](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
-**[Live Demo](https://kiren-labs.github.io/finance-tracker/)** | **[Documentation](VERSION.md)** | **[Contributing](CONTRIBUTING.md)** | **[Security](SECURITY.md)**
+**[Live Demo](https://kiren-labs.github.io/finchronicle/)** | **[Documentation](VERSION.md)** | **[Contributing](CONTRIBUTING.md)** | **[Security](SECURITY.md)**
 
 ---
 
@@ -62,7 +62,7 @@
 
 ### Option 1: Use the Hosted Version
 
-1. Visit: **[https://kiren-labs.github.io/finance-tracker/](https://kiren-labs.github.io/finance-tracker/)**
+1. Visit: **[https://kiren-labs.github.io/finchronicle/](https://kiren-labs.github.io/finchronicle/)**
 2. On mobile, tap **Share** → **Add to Home Screen**
 3. Start tracking your finances!
 
@@ -73,14 +73,14 @@
 1. Fork this repository
 2. Go to Settings → Pages
 3. Source: Deploy from branch `main`
-4. Your app will be at: `https://kiren-labs.github.io/finance-tracker`
+4. Your app will be at: `https://kiren-labs.github.io/finchronicle`
 
 #### Using Local Server
 
 ```bash
 # Clone the repository
-git clone https://github.com/kiren-labs/finance-tracker.git
-cd finance-tracker
+git clone https://github.com/kiren-labs/finchronicle.git
+cd finchronicle
 
 # Start local server
 python3 -m http.server 8000
@@ -104,7 +104,7 @@ open http://localhost:8000
 ### Project Structure
 
 ```
-finance-tracker/
+finchronicle/
 ├── index.html          # Main app (HTML + CSS + JS)
 ├── sw.js              # Service Worker for offline support
 ├── manifest.json      # PWA manifest
@@ -125,7 +125,7 @@ finance-tracker/
    const APP_VERSION = '3.2.0';
 
    // sw.js (line 2)
-   const CACHE_NAME = 'finance-tracker-v6';
+   const CACHE_NAME = 'finchronicle-v6';
    ```
 3. **Test locally**:
    ```bash
@@ -289,7 +289,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🐛 Bug Reports
 
-Found a bug? Please [open an issue](https://github.com/kiren-labs/finance-tracker/issues/new) with:
+Found a bug? Please [open an issue](https://github.com/kiren-labs/finchronicle/issues/new) with:
 
 - Browser and OS version
 - Steps to reproduce
@@ -317,8 +317,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📞 Support
 
 - **Documentation**: [VERSION.md](VERSION.md)
-- **Issues**: [GitHub Issues](https://github.com/kiren-labs/finance-tracker/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kiren-labs/finance-tracker/discussions)
+- **Issues**: [GitHub Issues](https://github.com/kiren-labs/finchronicle/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/kiren-labs/finchronicle/discussions)
 
 ---
 
@@ -349,6 +349,6 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 **Made with ❤️ for simple, private finance tracking**
 
-[Report Bug](https://github.com/kiren-labs/finance-tracker/issues) · [Request Feature](https://github.com/kiren-labs/finance-tracker/issues) · [Contribute](CONTRIBUTING.md)
+[Report Bug](https://github.com/kiren-labs/finchronicle/issues) · [Request Feature](https://github.com/kiren-labs/finchronicle/issues) · [Contribute](CONTRIBUTING.md)
 
 </div>

@@ -1,10 +1,13 @@
 // Service Worker for offline functionality
-const CACHE_NAME = 'finance-tracker-v5';
+const CACHE_NAME = 'finchronicle-v3.1.0';
 const urlsToCache = [
     './',
     './index.html',
     './manifest.json',
-    './robots.txt'
+    './robots.txt',
+    './icons/icon-192.png',
+    './icons/icon-512.png',
+    './icons/maskable-icon-512.png'
 ];
 
 // Listen for messages from the app

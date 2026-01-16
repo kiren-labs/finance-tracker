@@ -1,0 +1,44 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for text -->
+    <linearGradient id="textGradientMaskable" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00b894"/>
+      <stop offset="100%" stop-color="#11adeb"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background fill for maskable icon (solid color) -->
+  <rect width="512" height="512" fill="#ffffff"/>
+
+  <!-- Icon content - scaled and centered with proper padding for safe zone -->
+  <!-- Safe zone is 80% of icon, so we add padding -->
+  <g transform="translate(106, 106)">
+    <!-- Book background -->
+    <rect x="0" y="0" width="300" height="300" rx="35"
+          fill="#FFFFFF" stroke="#e5e5e7" stroke-width="4"/>
+
+    <!-- Left spine using correct NCC RED -->
+    <line x1="75" y1="0" x2="75" y2="300"
+          stroke="#d63031" stroke-width="12"/>
+
+    <line y1="75" x1="0" y2="75" x2="300"
+          stroke="#fdcb6e" stroke-width="12"/>
+
+    <!-- Growth line (shadow/polyline glow) -->
+    <polyline points="50,275 112,175 175,206 250,100"
+              fill="none"
+              stroke="#00b894"
+              stroke-width="12"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              opacity="0.6"/>
+
+    <!-- Growth line (primary highlight) -->
+    <polyline points="50,275 112,175 175,206 250,100"
+              fill="none"
+              stroke="#00b894"
+              stroke-width="8"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+  </g>
+</svg>
