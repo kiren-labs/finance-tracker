@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinChronicle Performance Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        h1 { color: #0051D5; margin-bottom: 10px; }
+        .subtitle { color: #6e6e73; margin-bottom: 30px; }
+        button {
+            background: #0051D5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover { background: #0046b8; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f7;
+            border-radius: 8px;
+            display: none;
+        }
+        .results.show { display: block; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #0051D5;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background: #f9f9f9; }
+        .good { color: #34C759; font-weight: 600; }
+        .warning { color: #FF9500; font-weight: 600; }
+        .bad { color: #FF3B30; font-weight: 600; }
+        .metric { font-family: 'Monaco', monospace; font-size: 14px; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.good { background: #d1f2dd; color: #34C759; }
+        .status.warning { background: #fff3cd; color: #FF9500; }
+        .status.bad { background: #ffe5e5; color: #FF3B30; }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0051D5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 FinChronicle Performance Test</h1>
+        <p class="subtitle">Measure the performance of your modular refactoring</p>
+
+        <button onclick="testLoadPerformance()">🚀 Test Load Performance</button>
+        <button onclick="testNetworkMetrics()">🌐 Network Metrics</button>
+        <button onclick="testMemoryUsage()">💾 Memory Usage</button>
+        <button onclick="testModuleMetrics()">📦 Module Metrics</button>
+        <button onclick="exportResults()">📥 Export Results</button>
+        <button onclick="runAllTests()" style="background: #34C759;">▶️ Run All Tests</button>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        let allMetrics = {};
+
+        function showResults(html) {
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+
+        function getStatus(value, goodThreshold, warningThreshold) {
+            if (value <= goodThreshold) return 'good';
+            if (value <= warningThreshold) return 'warning';
+            return 'bad';
+        }
+
+        function testLoadPerformance() {
+            const timing = performance.timing;
+            const navigation = performance.getEntriesByType('navigation')[0];
+
+            const metrics = {
+                'DNS Lookup': timing.domainLookupEnd - timing.domainLookupStart,
+                'TCP Connection': timing.connectEnd - timing.connectStart,
+                'Request Time': timing.responseStart - timing.requestStart,
+                'Response Time': timing.responseEnd - timing.responseStart,
+                'DOM Processing': timing.domComplete - timing.domLoading,
+                'DOM Content Loaded': timing.domContentLoadedEventEnd - timing.navigationStart,
+                'Page Load Complete': timing.loadEventEnd - timing.navigationStart,
+            };
+
+            allMetrics.loadPerformance = metrics;
+
+            let html = '<h2>🚀 Load Performance</h2><table><tr><th>Metric</th><th>Time</th><th>Status</th></tr>';
+
+            for (const [name, value] of Object.entries(metrics)) {
+                const ms = value.toFixed(2);
+                let status = 'good';
+                if (name === 'Page Load Complete') {
+                    status = getStatus(value, 1000, 3000);
+                }
+                html += `<tr><td>${name}</td><td class="metric">${ms} ms</td><td><span class="status ${status}">${status.toUpperCase()}</span></td></tr>`;
+            }
+
+            html += '</table>';
+
+            // Resource timings
+            const resources = performance.getEntriesByType('resource');
+            const jsResources = resources.filter(r => r.name.includes('.js'));
+
+            html += '<h3>📦 JavaScript Modules</h3><table><tr><th>Module</th><th>Size</th><th>Time</th></tr>';
+
+            jsResources.forEach(res => {
+                const name = res.name.split('/').pop();
+                const size = res.transferSize ? (res.transferSize / 1024).toFixed(2) + ' KB' : 'Cached';
+                const time = res.duration.toFixed(2) + ' ms';
+                html += `<tr><td>${name}</td><td class="metric">${size}</td><td class="metric">${time}</td></tr>`;
+            });
+
+            html += '</table>';
+
+            // Performance marks
+            const marks = performance.getEntriesByType('mark');
+            const measures = performance.getEntriesByType('measure');
+
+            if (measures.length > 0) {
+                html += '<h3>📏 Custom Measures</h3><table><tr><th>Measure</th><th>Duration</th></tr>';
+                measures.forEach(m => {
+                    html += `<tr><td>${m.name}</td><td class="metric">${m.duration.toFixed(2)} ms</td></tr>`;
+                });
+                html += '</table>';
+            }
+
+            showResults(html);
+        }
+
+        function testNetworkMetrics() {
+            const resources = performance.getEntriesByType('resource');
+            const jsResources = resources.filter(r => r.name.includes('.js'));
+            const cssResources = resources.filter(r => r.name.includes('.css'));
+
+            const totalJS = jsResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
+            const totalCSS = cssResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
+            const cachedJS = jsResources.filter(r => r.transferSize === 0).length;
+            const cachedCSS = cssResources.filter(r => r.transferSize === 0).length;
+
+            allMetrics.network = {
+                'Total JS Files': jsResources.length,
+                'Total JS Size': (totalJS / 1024).toFixed(2) + ' KB',
+                'Cached JS Files': cachedJS,
+                'Total CSS Files': cssResources.length,
+                'Total CSS Size': (totalCSS / 1024).toFixed(2) + ' KB',
+                'Cache Hit Rate': ((cachedJS / jsResources.length) * 100).toFixed(0) + '%'
+            };
+
+            let html = '<h2>🌐 Network Metrics</h2><table><tr><th>Metric</th><th>Value</th></tr>';
+
+            for (const [name, value] of Object.entries(allMetrics.network)) {
+                html += `<tr><td>${name}</td><td class="metric">${value}</td></tr>`;
+            }
+
+            html += '</table>';
+
+            // Detailed breakdown
+            html += '<h3>📦 Module Details</h3><table><tr><th>File</th><th>Transfer Size</th><th>Decoded Size</th><th>Duration</th><th>Cache Status</th></tr>';
+
+            jsResources.forEach(res => {
+                const name = res.name.split('/').slice(-2).join('/');
+                const transfer = res.transferSize ? (res.transferSize / 1024).toFixed(2) + ' KB' : '0 KB';
+                const decoded = res.decodedBodySize ? (res.decodedBodySize / 1024).toFixed(2) + ' KB' : 'N/A';
+                const duration = res.duration.toFixed(2) + ' ms';
+                const cached = res.transferSize === 0 ? '<span class="status good">CACHED</span>' : '<span class="status warning">NETWORK</span>';
+                html += `<tr><td>${name}</td><td class="metric">${transfer}</td><td class="metric">${decoded}</td><td class="metric">${duration}</td><td>${cached}</td></tr>`;
+            });
+
+            html += '</table>';
+
+            showResults(html);
+        }
+
+        function testMemoryUsage() {
+            if (performance.memory) {
+                const memory = performance.memory;
+
+                allMetrics.memory = {
+                    'Used JS Heap': (memory.usedJSHeapSize / 1024 / 1024).toFixed(2) + ' MB',
+                    'Total JS Heap': (memory.totalJSHeapSize / 1024 / 1024).toFixed(2) + ' MB',
+                    'Heap Limit': (memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2) + ' MB',
+                    'Usage %': ((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100).toFixed(1) + '%'
+                };
+
+                let html = '<h2>💾 Memory Usage</h2><table><tr><th>Metric</th><th>Value</th><th>Status</th></tr>';
+
+                for (const [name, value] of Object.entries(allMetrics.memory)) {
+                    let status = 'good';
+                    if (name === 'Usage %') {
+                        const usage = parseFloat(value);
+                        status = getStatus(usage, 50, 80);
+                    }
+                    html += `<tr><td>${name}</td><td class="metric">${value}</td><td><span class="status ${status}">${status.toUpperCase()}</span></td></tr>`;
+                }
+
+                html += '</table>';
+                html += '<p style="margin-top: 20px; color: #6e6e73;"><strong>Tip:</strong> Open Chrome DevTools → Memory tab → Take Heap Snapshot for detailed analysis</p>';
+
+                showResults(html);
+            } else {
+                showResults('<h2>💾 Memory Usage</h2><p>Memory API not available. Use Chrome for memory profiling.</p>');
+            }
+        }
+
+        function testModuleMetrics() {
+            const jsModules = [
+                'app.js', 'store.js', 'events.js', 'constants.js', 'storage.js',
+                'transaction.js', 'components.js', 'renderer.js', 'tabs.js',
+                'currency.js', 'export.js', 'theme.js', 'update.js',
+                'formatters.js', 'validators.js'
+            ];
+
+            const resources = performance.getEntriesByType('resource');
+            const moduleData = jsModules.map(name => {
+                const res = resources.find(r => r.name.includes(name));
+                return {
+                    name,
+                    found: !!res,
+                    size: res ? (res.transferSize || res.decodedBodySize) : 0,
+                    duration: res ? res.duration : 0,
+                    cached: res ? res.transferSize === 0 : false
+                };
+            });
+
+            const totalSize = moduleData.reduce((sum, m) => sum + m.size, 0);
+            const avgDuration = moduleData.reduce((sum, m) => sum + m.duration, 0) / moduleData.length;
+            const cachedCount = moduleData.filter(m => m.cached).length;
+
+            allMetrics.modules = {
+                'Total Modules': jsModules.length,
+                'Loaded Modules': moduleData.filter(m => m.found).length,
+                'Total Size': (totalSize / 1024).toFixed(2) + ' KB',
+                'Avg Load Time': avgDuration.toFixed(2) + ' ms',
+                'Cached Modules': cachedCount,
+                'Cache Efficiency': ((cachedCount / jsModules.length) * 100).toFixed(0) + '%'
+            };
+
+            let html = '<h2>📦 Module Metrics</h2><table><tr><th>Metric</th><th>Value</th></tr>';
+
+            for (const [name, value] of Object.entries(allMetrics.modules)) {
+                html += `<tr><td>${name}</td><td class="metric">${value}</td></tr>`;
+            }
+
+            html += '</table>';
+
+            html += '<h3>Module Breakdown</h3><table><tr><th>Module</th><th>Size</th><th>Load Time</th><th>Status</th></tr>';
+
+            moduleData.forEach(m => {
+                const size = (m.size / 1024).toFixed(2) + ' KB';
+                const duration = m.duration.toFixed(2) + ' ms';
+                const status = m.cached ? '<span class="status good">CACHED</span>' :
+                              m.found ? '<span class="status warning">NETWORK</span>' :
+                              '<span class="status bad">NOT FOUND</span>';
+                html += `<tr><td>${m.name}</td><td class="metric">${size}</td><td class="metric">${duration}</td><td>${status}</td></tr>`;
+            });
+
+            html += '</table>';
+
+            showResults(html);
+        }
+
+        async function runAllTests() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Running tests... <span class="loading"></span>';
+
+            // Run all tests
+            testLoadPerformance();
+            await new Promise(r => setTimeout(r, 500));
+            testNetworkMetrics();
+            await new Promise(r => setTimeout(r, 500));
+            testMemoryUsage();
+            await new Promise(r => setTimeout(r, 500));
+            testModuleMetrics();
+
+            // Generate summary
+            const summary = `
+                <h2>✅ All Tests Complete</h2>
+                <div style="padding: 20px; background: white; border-radius: 8px; margin: 20px 0;">
+                    <h3>📊 Summary</h3>
+                    <ul style="line-height: 2;">
+                        <li><strong>Page Load:</strong> ${allMetrics.loadPerformance['Page Load Complete'].toFixed(0)} ms</li>
+                        <li><strong>Total Modules:</strong> ${allMetrics.modules['Total Modules']}</li>
+                        <li><strong>Total Size:</strong> ${allMetrics.modules['Total Size']}</li>
+                        <li><strong>Cache Hit Rate:</strong> ${allMetrics.modules['Cache Efficiency']}</li>
+                        ${allMetrics.memory ? `<li><strong>Memory Used:</strong> ${allMetrics.memory['Used JS Heap']}</li>` : ''}
+                    </ul>
+                </div>
+                <p><button onclick="exportResults()" style="margin: 0;">📥 Export Full Report</button></p>
+            `;
+
+            showResults(summary);
+
+            btn.disabled = false;
+            btn.innerHTML = '▶️ Run All Tests';
+        }
+
+        function exportResults() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                metrics: allMetrics
+            };
+
+            const json = JSON.stringify(report, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `performance-report-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Performance report exported! 📊');
+        }
+
+        // Run initial test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testLoadPerformance();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
