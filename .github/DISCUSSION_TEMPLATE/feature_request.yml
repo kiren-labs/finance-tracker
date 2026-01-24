@@ -1,0 +1,58 @@
+labels: [feature-request, needs-votes]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 Feature Request
+        Thanks for suggesting a new feature for FinChronicle!
+
+        **Before submitting:**
+        - Check if this feature already exists in [open discussions](https://github.com/kiren-labs/finchronicle/discussions/categories/feature-requests)
+        - If it exists, upvote it instead! 👍
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "🎯 What problem does this solve?"
+      description: "Describe the problem or need this feature addresses"
+      placeholder: "As a user, I want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "💡 Proposed Solution"
+      description: "How would you like this feature to work?"
+      placeholder: "I'd like to be able to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "🔄 Alternatives Considered"
+      description: "Have you considered any alternative solutions or workarounds?"
+      placeholder: "I've tried..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "📊 Priority (Your Opinion)"
+      description: "How important is this feature to you?"
+      options:
+        - "🔴 High - I really need this"
+        - "🟡 Medium - Would be nice to have"
+        - "🟢 Low - Just an idea"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "🤝 Contribution"
+      options:
+        - label: "I'd be willing to help implement this feature"
+          required: false

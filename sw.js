@@ -9,7 +9,23 @@ const urlsToCache = [
     './css/dark-mode.css',
     './icons/icon-192.png',
     './icons/icon-512.png',
-    './icons/maskable-icon-512.png'
+    './icons/maskable-icon-512.png',
+    // JavaScript modules
+    './js/app.js',
+    './js/core/store.js',
+    './js/core/events.js',
+    './js/data/constants.js',
+    './js/data/storage.js',
+    './js/data/transaction.js',
+    './js/ui/components.js',
+    './js/ui/renderer.js',
+    './js/ui/tabs.js',
+    './js/features/currency.js',
+    './js/features/export.js',
+    './js/features/theme.js',
+    './js/features/update.js',
+    './js/utils/formatters.js',
+    './js/utils/validators.js'
 ];
 
 // Listen for messages from the app
