@@ -1,6 +1,6 @@
 # Version Management Guide
 
-## Current Version: 3.2.1
+## Current Version: 3.3.0
 
 ## How Versioning Works
 
