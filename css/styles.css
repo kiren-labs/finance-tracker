@@ -37,6 +37,12 @@
     font-size: 18px;
 }
 
+.pagination-btn:disabled:hover {
+    background: #e5e5e7;
+    transform: none;
+    box-shadow: none;
+}
+
 .pagination-btn:hover:not(:disabled) {
     background: #0046b8;
     transform: translateY(-1px);
@@ -103,6 +109,24 @@
 
     .tab i {
         font-size: 16px;
+    }
+
+    /* Summary tiles compact spacing */
+    .summary {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .summary-card {
+        padding: 12px;
+    }
+
+    .summary-label {
+        font-size: 11px;
+    }
+
+    .summary-value {
+        font-size: 20px;
     }
 }
 
@@ -445,6 +469,14 @@ button.primary:active {
     flex-shrink: 0;
 }
 
+.transaction-amount.negative {
+    color: #d93025;
+}
+
+.transaction-amount.positive {
+    color: #1e8e3e;
+}
+
 .transaction-actions {
     display: flex;
     gap: 8px;
@@ -455,19 +487,32 @@ button.primary:active {
 @media (max-width: 480px) {
     .transaction-item {
         padding: 12px;
-        gap: 10px;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        grid-template-areas:
+            "icon details amount"
+            "icon details actions";
+        column-gap: 10px;
+        row-gap: 6px;
+        align-items: center;
+        border-bottom: 1px solid #ebebef;
     }
 
     .transaction-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        border-radius: 8px;
+        grid-area: icon;
     }
 
     .transaction-details {
-        flex: 1;
+        grid-area: details;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
         min-width: 0;
+        line-height: 1.2;
     }
 
     .transaction-category {
@@ -476,8 +521,10 @@ button.primary:active {
 
     .transaction-note {
         font-size: 12px;
+        line-height: 1.3;
         white-space: normal;
         display: -webkit-box;
+        line-clamp: 2;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
@@ -485,21 +532,44 @@ button.primary:active {
 
     .transaction-date {
         font-size: 11px;
+        color: #8e8e93;
     }
 
     .transaction-amount {
         font-size: 16px;
+        min-width: 72px;
+        text-align: right;
+        grid-area: amount;
+        align-self: start;
+    }
+
+    .transaction-amount.negative,
+    .transaction-amount.positive {
+        padding: 2px 6px;
+        border-radius: 8px;
+        display: inline-block;
+        background: #f5f5f7;
+    }
+
+    .transaction-amount.negative {
+        background: #fff1f0;
+    }
+
+    .transaction-amount.positive {
+        background: #eef8f0;
     }
 
     .transaction-actions {
         gap: 6px;
-        margin-left: 4px;
+        margin-left: 0;
+        grid-area: actions;
+        justify-content: flex-end;
     }
 
     .action-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
+        width: 26px;
+        height: 26px;
+        font-size: 13px;
     }
 }
 
@@ -560,12 +630,14 @@ button.primary:active {
 }
 
 .delete-btn {
-    background: #ff3b30;
-    color: white;
+    background: #ffe8e6;
+    color: #d93025;
+    border: 1px solid #f3b3ad;
 }
 
 .delete-btn:active {
-    background: #cc2e24;
+    background: #ffd4cf;
+    color: #c5221f;
 }
 
 .toolbar {
