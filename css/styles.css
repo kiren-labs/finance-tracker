@@ -2,6 +2,129 @@
 /* Version: 3.3.1 */
 
 /* ==========================================================================
+   Pagination Controls
+   ========================================================================== */
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #0051D5;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.pagination-btn i {
+    font-size: 18px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #0046b8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,81,213,0.3);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0,81,213,0.2);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #e5e5e7;
+    color: #86868b;
+}
+
+.pagination-btn:disabled:hover {
+    background: #e5e5e7;
+    transform: none;
+    box-shadow: none;
+}
+
+.pagination-info {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6e6e73;
+    white-space: nowrap;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .pagination-container {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .pagination-btn {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    .pagination-btn span {
+        display: none;
+    }
+
+    .pagination-btn i {
+        font-size: 20px;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+    }
+
+    /* Tab responsive styling */
+    .tab {
+        padding: 8px 6px;
+        font-size: 13px;
+        gap: 4px;
+    }
+
+    .tab i {
+        font-size: 16px;
+    }
+}
+
+/* Extra small screens - icon only tabs */
+@media (max-width: 360px) {
+    .tabs {
+        padding: 3px;
+    }
+
+    .tab {
+        padding: 10px 4px;
+        font-size: 11px;
+        gap: 3px;
+        flex-direction: column;
+    }
+
+    .tab i {
+        font-size: 18px;
+    }
+}
+
+/* ==========================================================================
    Base Styles
    ========================================================================== */
 
@@ -124,7 +247,10 @@ h1 {
 .tab {
     flex: 1;
     padding: 10px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     border-radius: 8px;
     border: none;
     background: none;
@@ -133,6 +259,7 @@ h1 {
     color: #6e6e73;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .tab.active {
