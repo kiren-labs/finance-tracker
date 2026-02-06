@@ -40,6 +40,52 @@
         </div>
     </div>
 
+    <!-- Restore Preview Modal -->
+    <div class="modal" id="restorePreviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="ri-file-list-line"></i> Backup Preview</h3>
+                <button class="close-btn" onclick="closeRestorePreview()" aria-label="Close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="backup-preview-info">
+                <div class="preview-item">
+                    <span class="preview-label">Backup Date:</span>
+                    <span class="preview-value" id="previewBackupDate">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Transaction Count:</span>
+                    <span class="preview-value" id="previewCount">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Date Range:</span>
+                    <span class="preview-value" id="previewDateRange">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Currency:</span>
+                    <span class="preview-value" id="previewCurrency">-</span>
+                </div>
+            </div>
+
+            <div class="modal-warning">
+                <i class="ri-alert-line"></i>
+                <strong>Warning:</strong> This will permanently delete all your current transactions
+                and replace them with the backup data. This action cannot be undone.
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeRestorePreview()">
+                    Cancel
+                </button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmRestore()">
+                    Restore Backup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <header>
@@ -219,6 +265,16 @@
                         </button>
                         <input type="file" id="importFile" accept=".csv,text/csv" style="display: none;"
                             onchange="handleImport(event)">
+                        <button class="toolbar-btn" onclick="createBackup()" aria-label="Create Backup">
+                            <i class="ri-save-line"></i>
+                            <span>Create Backup</span>
+                        </button>
+                        <button class="toolbar-btn" onclick="triggerRestore()" aria-label="Restore from Backup">
+                            <i class="ri-upload-cloud-line"></i>
+                            <span>Restore Backup</span>
+                        </button>
+                        <input type="file" id="restoreFile" accept=".csv,text/csv" style="display: none;"
+                            onchange="handleRestore(event)">
                         <button class="toolbar-btn" onclick="checkForUpdates()" aria-label="Check for updates"
                             id="updateCheckBtn">
                             <i class="ri-refresh-line"></i>
