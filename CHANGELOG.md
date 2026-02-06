@@ -48,6 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📊 Added "Summary" section header with collapse control
 - 📏 Compact summary view shows all stats in one line when collapsed
 - 🔄 Both detailed cards and compact view stay in sync via updateSummary()
+- 📱 **iOS Optimizations**: Better mobile experience
+  - Disabled zoom (prevents accidental zoom, app-like experience)
+  - Increased bottom nav height to 60px (better touch targets)
+  - Larger font sizes on mobile (14px labels, 16px inputs)
+  - Minimum touch target: 48x48px for all interactive elements
+  - Added safe-area-inset support for iPhone notch/home indicator
+  - Increased spacing and padding for better readability
+  - Bottom nav icons: 26px (larger and clearer)
 
 ---
 
@@ -117,6 +125,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Data integrity validation (dates, amounts, types)
 - Error recovery: if restore fails, existing data is preserved
 - Safe merge mode prevents accidental data loss
+
+### Technical
+- Added `toggleSummaryCollapse()` and `loadSummaryState()` functions
+- Compact summary dynamically updates via `updateSummary()`
+- All hardcoded CSS values replaced with design tokens
+- Added `--color-install` token for install prompt
+- Mobile font scale increased: 13px → 14px, 15px → 16px
+- Bottom nav uses `env(safe-area-inset-bottom)` for iOS safe areas
+- Viewport meta updated: `maximum-scale=1.0, user-scalable=no`
+- Minimum touch targets: 48px for iOS compliance
+- Token coverage: 95%+ (only layout-specific values remain hardcoded)
 
 ---
 

@@ -119,12 +119,13 @@
 /* Mobile (≤480px) token adjustments */
 @media (max-width: 480px) {
     :root {
-        --space-lg: 12px;
-        --space-md: 10px;
-        --font-lg: 15px;
-        --font-md: 13px;
-        --font-sm: 11px;
-        --button-padding-y: 10px;
+        --space-lg: 14px;
+        --space-md: 12px;
+        --font-lg: 16px;
+        --font-md: 14px;
+        --font-sm: 12px;
+        --font-xs: 11px;
+        --button-padding-y: 12px;
     }
 }
 

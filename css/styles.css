@@ -163,25 +163,25 @@
     }
 
     .summary-compact {
-        font-size: var(--font-xs);
-        gap: var(--space-2xs);
-        margin-left: var(--space-sm);
+        font-size: var(--font-md);
+        gap: var(--space-sm);
+        margin-left: var(--space-xs);
     }
 
     .compact-stat {
-        font-size: var(--font-md);
+        font-size: var(--font-xl);
     }
 
     .compact-stat-small {
-        font-size: var(--font-xs);
+        font-size: var(--font-md);
     }
 
     .compact-stat-small i {
-        font-size: var(--font-xs);
+        font-size: var(--font-lg);
     }
 
-    .summary-title {
-        font-size: var(--font-sm);
+    .summary-section.collapsed .summary-title {
+        font-size: var(--font-lg);
     }
 
     .summary {
@@ -241,7 +241,7 @@ i {
 body {
     font-family: var(--font-family-base);
     background: var(--color-bg);
-    padding-bottom: 70px;
+    padding-bottom: 80px;
 }
 
 .container {
@@ -404,10 +404,10 @@ h1 i {
 .summary-compact {
     display: none;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     flex-wrap: wrap;
-    font-size: var(--font-sm);
-    margin-left: var(--space-md);
+    font-size: var(--font-md);
+    margin-left: var(--space-sm);
 }
 
 .summary-section.collapsed .summary-compact {
@@ -415,31 +415,33 @@ h1 i {
 }
 
 .summary-section.collapsed .summary-title {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
+    font-weight: 600;
 }
 
 .compact-stat {
     font-weight: 700;
-    font-size: var(--font-lg);
+    font-size: var(--font-xl);
     color: var(--color-text);
 }
 
 .compact-separator {
     color: var(--color-text-muted);
-    opacity: 0.5;
+    opacity: 0.4;
+    font-size: var(--font-md);
 }
 
 .compact-stat-small {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2xs);
-    font-size: var(--font-sm);
+    gap: var(--space-xs);
+    font-size: var(--font-md);
     font-weight: 600;
     color: var(--color-text-muted);
 }
 
 .compact-stat-small i {
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
 }
 
 .compact-income {
@@ -619,10 +621,10 @@ h1 i {
 
 label {
     display: block;
-    font-size: var(--font-md);
+    font-size: var(--font-lg);
     color: var(--color-text);
-    margin-bottom: var(--space-xs);
-    font-weight: 500;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
 }
 
 input, select {
@@ -633,6 +635,7 @@ input, select {
     font-size: var(--font-lg);
     font-family: inherit;
     background: var(--color-surface);
+    min-height: 48px;
 }
 
 /* Hide number input spinner arrows */
@@ -687,6 +690,7 @@ button.primary {
     align-items: center;
     justify-content: center;
     gap: var(--space-sm);
+    min-height: 52px;
 }
 
 button.primary:active {
@@ -741,15 +745,16 @@ button.primary.loading .btn-spinner {
 
 .type-option {
     flex: 1;
-    padding: var(--space-md);
+    padding: var(--space-lg);
     border: none;
     border-radius: var(--space-sm);
     background: transparent;
     font-size: var(--font-lg);
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-fast);
     color: var(--color-text-muted);
+    min-height: 48px;
 }
 
 .type-option.active {
@@ -1561,7 +1566,8 @@ button.primary.loading .btn-spinner {
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     display: flex;
-    padding: var(--space-sm);
+    padding: var(--space-sm) 0;
+    padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
     box-shadow: 0 -2px var(--space-sm) rgba(0,0,0,0.05);
 }
 
@@ -1571,11 +1577,14 @@ button.primary.loading .btn-spinner {
     flex-direction: column;
     align-items: center;
     padding: var(--space-sm);
+    min-height: 60px;
     border: none;
     background: none;
     color: var(--color-text-muted);
-    font-size: var(--font-sm);
+    font-size: var(--font-md);
+    font-weight: 500;
     cursor: pointer;
+    transition: all var(--transition-fast);
 }
 
 .nav-item.active {
@@ -1583,7 +1592,7 @@ button.primary.loading .btn-spinner {
 }
 
 .nav-item-icon {
-    font-size: var(--font-4xl);
+    font-size: var(--font-5xl);
     margin-bottom: var(--space-2xs);
 }
 
