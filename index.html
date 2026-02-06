@@ -377,9 +377,29 @@
         </main>
     </div>
 
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+        <button id="add-nav" class="nav-item active" onclick="switchTab('add')" role="tab" aria-selected="true" aria-controls="addTab">
+            <i class="ri-add-line nav-item-icon"></i>
+            <span>Add</span>
+        </button>
+        <button id="list-nav" class="nav-item" onclick="switchTab('list')" role="tab" aria-selected="false" aria-controls="listTab">
+            <i class="ri-list-check nav-item-icon"></i>
+            <span>List</span>
+        </button>
+        <button id="groups-nav" class="nav-item" onclick="switchTab('groups')" role="tab" aria-selected="false" aria-controls="groupsTab">
+            <i class="ri-bar-chart-2-line nav-item-icon"></i>
+            <span>Groups</span>
+        </button>
+        <button id="settings-nav" class="nav-item" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-controls="settingsTab">
+            <i class="ri-settings-3-line nav-item-icon"></i>
+            <span>Settings</span>
+        </button>
+    </nav>
+
     <script>
         // App Version - Update this when releasing new features
-        const APP_VERSION = '3.5.0';
+        const APP_VERSION = '3.5.1';
         const VERSION_KEY = 'app_version';
 
         // IndexedDB Configuration
@@ -1125,13 +1145,24 @@
         function switchTab(tab) {
             currentTab = tab;
 
-            // Update tab buttons
+            // Update old tab buttons (if they exist)
             document.querySelectorAll('.tab').forEach(t => {
                 t.classList.remove('active');
                 t.setAttribute('aria-selected', 'false');
             });
-            event.target.classList.add('active');
-            event.target.setAttribute('aria-selected', 'true');
+
+            // Update bottom navigation items
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+                nav.setAttribute('aria-selected', 'false');
+            });
+
+            // Set active state on bottom nav
+            const activeNav = document.getElementById(tab + '-nav');
+            if (activeNav) {
+                activeNav.classList.add('active');
+                activeNav.setAttribute('aria-selected', 'true');
+            }
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
