@@ -17,6 +17,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.0] - 2026-02-06
+
+### Added
+- 💾 **Backup and Restore System**: Complete backup/restore functionality
+  - Create timestamped backups with metadata (backup date, version, transaction count, date range, currency)
+  - Multiple backup support - keep as many backup files as you want
+  - Backup preview modal - see what's in a backup before restoring
+  - **Merge mode restore** - preserves existing data, adds only new transactions
+  - **Automatic duplicate detection** - skips transactions that already exist
+  - Enhanced CSV format with metadata headers as comments
+  - All transaction fields included (ID, CreatedAt for data integrity)
+- 🔍 **Backup Preview Modal**: Visual preview before restoring
+  - Shows backup date, transaction count, date range, currency
+  - Informational message about merge mode
+  - Cancel or confirm restore action
+- 📊 **Restore Report Modal**: Detailed statistics after restore
+  - Total transactions in backup
+  - New transactions added
+  - Duplicates skipped
+  - Current total transactions
+  - Color-coded statistics with icons
+- ✨ **Compact Single-Line Header**: Redesigned header for better space utilization
+  - Quick Add button (+ icon) - instantly jump to add transaction form
+  - Inline status and version - all in one line
+  - Improved app name typography (bolder, tighter letter-spacing)
+  - Blue wallet icon for better brand identity
+  - Saves ~20px vertical space
+- 🎨 **Enhanced Summary Cards with Icons**: Improved visual design
+  - Icons added to all 4 cards (calendar, checklist, up/down arrows)
+  - Color-coded icons match card purpose (green/red/blue)
+  - 2x2 grid layout maintained for balance
+  - Hover effects for interactivity
+  - Clean white background with proper icon sizing (24px)
+
+### Changed
+- 🎨 Settings tab reorganized with backup/restore buttons
+- 📦 Backup files now use timestamp-based naming: `finchronicle-backup-YYYY-MM-DD-HHMMSS.csv`
+- ✅ Restore operations now use **merge mode** (safe, non-destructive)
+- 🔄 Existing transactions are preserved during restore
+- 🏗️ Header redesigned to single-line compact layout (saves vertical space)
+- 📐 Summary cards now use hero layout with "This Month" emphasized
+- 🎯 Better use of horizontal space in header with quick action buttons
+
+### Technical
+- Added `isDuplicateTransaction()` function for duplicate detection
+- Added `createBackup()` and `generateBackupMetadata()` for enhanced backups
+- Added `parseBackupCSV()` with metadata extraction
+- Added `showRestoreReport()` and `closeRestoreReport()` for statistics display
+- Added `quickAddTransaction()` function for header quick action
+- Added restore report modal with `.restore-report-info` styling
+- Added `.modal-info` component for informational messages
+- Added `.header-content`, `.header-actions`, `.header-btn`, `.header-meta` CSS classes
+- Added `.card-icon` and `.card-content` for icon-based card layout
+- Updated summary cards to use flexbox with icons (24px size)
+- Enhanced h1 typography: font-weight 700, letter-spacing -0.5px
+- Blue wallet icon color (#0051D5) for brand identity
+- Comprehensive error handling and validation for backup files
+- Duplicate matching: same date, type, category, amount, and notes
+- Header height reduced from ~56px to ~36px (saves 20px)
+- Single-line header layout with flexbox for better space utilization
+
+### Security
+- Backup validation checks for required headers
+- Data integrity validation (dates, amounts, types)
+- Error recovery: if restore fails, existing data is preserved
+- Safe merge mode prevents accidental data loss
+
+---
+
 ## [3.4.0] - 2026-02-06
 
 ### Added
@@ -251,6 +320,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v3.5.0** - Backup and restore system with preview (2026-02-06)
 - **v3.4.0** - IndexedDB storage, enhanced form feedback, mobile improvements (2026-02-06)
 - **v3.3.2** - Mobile layout refinements (2026-01-31)
 - **v3.3.1** - Currency display improvements (2026-01-31)
