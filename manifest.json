@@ -1,13 +1,21 @@
 {
-  "name": "FinChronicle",
+  "name": "FinChronicle - Personal Finance Tracker",
   "short_name": "FinChronicle",
   "version": "3.4.0",
-  "description": "Simple offline-first personal finance tracker. Track expenses, income, filter by category, and export to CSV. Built by Kiren Labs.",
+  "description": "Privacy-first, offline-first personal finance tracker. Track expenses, income, analyze spending patterns, and export to CSV. All data stays on your device. Built by Kiren Labs.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0051D5",
   "orientation": "portrait",
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
+  "lang": "en-US",
+  "dir": "ltr",
   "icons": [
     {
       "src": "./icons/icon-192.png",
@@ -27,5 +35,34 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Add Transaction",
+      "short_name": "Add",
+      "description": "Quickly add a new transaction",
+      "url": "./index.html?tab=add",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "View List",
+      "short_name": "List",
+      "description": "View all transactions",
+      "url": "./index.html?tab=list",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

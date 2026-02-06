@@ -1,8 +1,18 @@
-# Finance Tracker - robots.txt
-# Allow all crawlers to access all content
+# FinChronicle - Personal Finance Tracker
+# robots.txt - SEO Configuration
 
+# Allow all search engines to index public content
 User-agent: *
 Allow: /
 
-# Sitemap (update this URL when deployed)
-# Sitemap: https://kiren-labs..github.io/ffinchronicle/sitemap.xml
+# Disallow crawling of documentation files (optional)
+# Uncomment if you want to keep these private
+# Disallow: /CONTRIBUTING.md
+# Disallow: /CODE_OF_CONDUCT.md
+# Disallow: /SECURITY.md
+
+# Sitemap location (GitHub Pages)
+Sitemap: https://kiren-labs.github.io/finchronicle/sitemap.xml
+
+# Crawl delay (optional - use if needed)
+# Crawl-delay: 10
