@@ -20,6 +20,7 @@
         integrity="sha384-RwhG+8423fpoSoUMjpibFzMxLQeaO7oBV45/+IxuLaxxiUOFL9R+OzbK5rBpSazc" crossorigin="anonymous">
 
     <!-- External Stylesheets -->
+    <link rel="stylesheet" href="./css/tokens.css">
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="./css/dark-mode.css">
 </head>
@@ -140,14 +141,12 @@
         <header>
             <div class="header-content">
                 <h1><i class="ri-wallet-3-line"></i> FinChronicle</h1>
-                <div class="header-actions">
+                <div class="header-meta">
+                    <span class="status-inline"><span class="status-dot"></span> Offline</span>
+                    <span class="version" id="appVersion">v3.5.1</span>
                     <button class="header-btn" onclick="quickAddTransaction()" aria-label="Quick Add Transaction" title="Quick Add">
                         <i class="ri-add-line"></i>
                     </button>
-                </div>
-                <div class="header-meta">
-                    <span class="status-inline"><span class="status-dot"></span> Offline</span>
-                    <span class="version" id="appVersion">v3.5.0</span>
                 </div>
             </div>
         </header>
@@ -173,7 +172,25 @@
             </div>
 
             <!-- Summary Cards -->
-            <div class="summary">
+            <div class="summary-section">
+                <div class="summary-header" onclick="toggleSummaryCollapse()">
+                    <div class="summary-header-content">
+                        <h2 class="summary-title">Summary</h2>
+                        <div class="summary-compact" id="summaryCompact">
+                            <span class="compact-stat" id="compactNet">฿0</span>
+                            <span class="compact-separator">•</span>
+                            <span class="compact-stat-small"><i class="ri-file-list-line"></i> <span id="compactEntries">0</span></span>
+                            <span class="compact-separator">•</span>
+                            <span class="compact-stat-small compact-income"><i class="ri-arrow-up-line"></i> <span id="compactIncome">฿0</span></span>
+                            <span class="compact-separator">•</span>
+                            <span class="compact-stat-small compact-expense"><i class="ri-arrow-down-line"></i> <span id="compactExpense">฿0</span></span>
+                        </div>
+                    </div>
+                    <button class="collapse-btn" onclick="event.stopPropagation(); toggleSummaryCollapse();" aria-label="Toggle Summary">
+                        <i class="ri-arrow-up-s-line" id="summaryCollapseIcon"></i>
+                    </button>
+                </div>
+                <div class="summary" id="summaryCards">
                 <div class="summary-card">
                     <div class="card-icon">
                         <i class="ri-calendar-check-line"></i>
@@ -210,6 +227,7 @@
                         <div class="summary-value" id="monthExpense">0</div>
                     </div>
                 </div>
+            </div>
             </div>
             <!-- Currency Selector Modal -->
             <div id="currencyModal" class="modal" style="display: none;">
@@ -376,9 +394,29 @@
         </main>
     </div>
 
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+        <button id="add-nav" class="nav-item active" onclick="switchTab('add')" role="tab" aria-selected="true" aria-controls="addTab">
+            <i class="ri-add-line nav-item-icon"></i>
+            <span>Add</span>
+        </button>
+        <button id="list-nav" class="nav-item" onclick="switchTab('list')" role="tab" aria-selected="false" aria-controls="listTab">
+            <i class="ri-list-check nav-item-icon"></i>
+            <span>List</span>
+        </button>
+        <button id="groups-nav" class="nav-item" onclick="switchTab('groups')" role="tab" aria-selected="false" aria-controls="groupsTab">
+            <i class="ri-bar-chart-2-line nav-item-icon"></i>
+            <span>Groups</span>
+        </button>
+        <button id="settings-nav" class="nav-item" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-controls="settingsTab">
+            <i class="ri-settings-3-line nav-item-icon"></i>
+            <span>Settings</span>
+        </button>
+    </nav>
+
     <script>
         // App Version - Update this when releasing new features
-        const APP_VERSION = '3.5.0';
+        const APP_VERSION = '3.5.1';
         const VERSION_KEY = 'app_version';
 
         // IndexedDB Configuration
@@ -850,6 +888,7 @@
 
             const net = income - expense;
 
+            // Update full summary cards
             document.getElementById('monthNet').textContent = formatCurrency(net);
             document.getElementById('monthNet').className = 'summary-value';
 
@@ -865,6 +904,15 @@
             document.getElementById('totalEntries').textContent = transactions.length;
             document.getElementById('monthIncome').textContent = formatCurrency(income);
             document.getElementById('monthExpense').textContent = formatCurrency(expense);
+
+            // Update compact summary view
+            const compactNetElem = document.getElementById('compactNet');
+            compactNetElem.textContent = formatCurrency(net);
+            compactNetElem.className = 'compact-stat ' + (net >= 0 ? 'compact-income' : 'compact-expense');
+
+            document.getElementById('compactEntries').textContent = transactions.length;
+            document.getElementById('compactIncome').textContent = formatCurrency(income);
+            document.getElementById('compactExpense').textContent = formatCurrency(expense);
         }
 
         // Update transactions list
@@ -1124,13 +1172,24 @@
         function switchTab(tab) {
             currentTab = tab;
 
-            // Update tab buttons
+            // Update old tab buttons (if they exist)
             document.querySelectorAll('.tab').forEach(t => {
                 t.classList.remove('active');
                 t.setAttribute('aria-selected', 'false');
             });
-            event.target.classList.add('active');
-            event.target.setAttribute('aria-selected', 'true');
+
+            // Update bottom navigation items
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+                nav.setAttribute('aria-selected', 'false');
+            });
+
+            // Set active state on bottom nav
+            const activeNav = document.getElementById(tab + '-nav');
+            if (activeNav) {
+                activeNav.classList.add('active');
+                activeNav.setAttribute('aria-selected', 'true');
+            }
 
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1139,14 +1198,34 @@
 
         // Quick Add Transaction (from header button)
         function quickAddTransaction() {
-            // Switch to Add tab
-            document.getElementById('add-tab').click();
+            // Switch to Add tab and navigate
+            const addNavBtn = document.getElementById('add-nav');
+            if (addNavBtn) {
+                addNavBtn.click();
+            }
 
             // Scroll to top and focus on amount input
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => {
                 document.getElementById('amount').focus();
             }, 300);
+        }
+
+        // Toggle summary collapse
+        function toggleSummaryCollapse() {
+            const section = document.querySelector('.summary-section');
+            const isCollapsed = section.classList.toggle('collapsed');
+
+            // Save state to localStorage
+            localStorage.setItem('summaryCollapsed', isCollapsed ? 'true' : 'false');
+        }
+
+        // Load summary collapse state
+        function loadSummaryState() {
+            const isCollapsed = localStorage.getItem('summaryCollapsed') === 'true';
+            if (isCollapsed) {
+                document.querySelector('.summary-section').classList.add('collapsed');
+            }
         }
 
         // Change grouping
@@ -2045,6 +2124,7 @@
                 updateUI();
                 checkAppVersion();
                 loadDarkMode();
+                loadSummaryState();
                 updateCurrencyDisplay();
                 checkInstallPrompt();
             } catch (err) {
