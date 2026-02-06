@@ -397,9 +397,7 @@ h1 i {
    ========================================================================== */
 
 .tabs {
-    display: flex;
-    padding: var(--space-2xs);
-    margin-bottom: var(--space-lg);
+    display: none;
 }
 
 .tab {
