@@ -17,6 +17,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.1] - 2026-02-06
+
+### Added
+- 📱 **Bottom Navigation Bar**: Modern mobile-first navigation
+  - Fixed bottom navigation with Add, List, Groups, Settings
+  - Always accessible - no need to scroll to switch tabs
+  - Better thumb reach on mobile devices
+  - Icons with labels for clarity
+- 🎛️ **Smart Collapsible Summary**: Space-saving with compact view
+  - Toggle button to collapse/expand summary cards
+  - **Collapsed view shows one-line summary in white card** with all key metrics
+  - Shows: This Month net • Total entries • Income • Expenses (all in one line)
+  - Proper card styling when collapsed (white background, shadow, padding)
+  - Entire collapsed card is clickable to expand (better UX)
+  - Hover effect on collapsed card
+  - Smooth animation with fade and height transition
+  - State saved to localStorage (remembers preference)
+  - Arrow icon rotates to indicate state
+  - Color-coded compact stats (green for positive, red for negative)
+
+### Changed
+- 🎨 Refactored styles to use shared design tokens and reduced repeated values
+- 🧩 Added `css/tokens.css` and updated dark mode to override tokens
+- 🔄 Moved tab navigation from middle of screen to fixed bottom bar
+- 📐 Removed Quick Refresh button from header (redundant)
+- 🎯 Summary card icons reduced to 24px (better proportions)
+- ✍️ Improved app name typography (bolder, tighter letter-spacing, blue icon)
+- ➡️ Quick Add button moved to right side of header (better mobile thumb reach)
+- 📊 Added "Summary" section header with collapse control
+- 📏 Compact summary view shows all stats in one line when collapsed
+- 🔄 Both detailed cards and compact view stay in sync via updateSummary()
+
+---
+
 ## [3.5.0] - 2026-02-06
 
 ### Added
@@ -320,6 +354,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v3.5.1** - Bottom navigation, design tokens, UI refinements (2026-02-06)
 - **v3.5.0** - Backup and restore system with preview (2026-02-06)
 - **v3.4.0** - IndexedDB storage, enhanced form feedback, mobile improvements (2026-02-06)
 - **v3.3.2** - Mobile layout refinements (2026-01-31)
