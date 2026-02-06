@@ -17,8 +17,8 @@ body.dark-mode {
     --color-toggle-bg: #2c2c2e;
     --color-toggle-active-bg: #1c1c1e;
 
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-sm: 0 var(--space-2xs) var(--space-sm) rgba(0,0,0,0.4);
+    --shadow-md: 0 var(--space-2xs) var(--space-md) rgba(0,0,0,0.4);
 }
 
 /* Dark mode pagination controls */
@@ -34,11 +34,11 @@ body.dark-mode .pagination-btn {
 
 body.dark-mode .pagination-btn:hover:not(:disabled) {
     background: var(--color-primary-hover);
-    box-shadow: 0 4px 12px rgba(0,97,245,0.4);
+    box-shadow: 0 var(--space-2xs) var(--space-md) rgba(0,97,245,0.4);
 }
 
 body.dark-mode .pagination-btn:active:not(:disabled) {
-    box-shadow: 0 2px 6px rgba(0,97,245,0.3);
+    box-shadow: 0 var(--space-2xs) var(--space-xs) rgba(0,97,245,0.3);
 }
 
 body.dark-mode .pagination-btn:disabled {
@@ -125,7 +125,7 @@ body.dark-mode .type-toggle {
 body.dark-mode .type-option.active {
     background: var(--color-toggle-active-bg);
     color: var(--color-text);
-    box-shadow: 0 2px 4px rgba(255,255,255,0.05);
+    box-shadow: 0 var(--space-2xs) var(--space-2xs) rgba(255,255,255,0.05);
 }
 
 /* ==========================================================================

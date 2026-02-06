@@ -54,6 +54,9 @@
     --color-chip-negative-bg: #fff1f0;
     --color-chip-positive-bg: #eef8f0;
 
+    --color-install: #667eea;
+    --color-install-dark: #764ba2;
+
     --gradient-primary: linear-gradient(135deg, #0051D5 0%, #0046b8 100%);
     --gradient-install: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-update: linear-gradient(135deg, #34c759 0%, #30b34d 100%);

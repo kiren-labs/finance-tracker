@@ -75,7 +75,7 @@
     }
 
     .pagination-btn {
-        padding: 8px var(--space-md);
+        padding: var(--space-sm) var(--space-md);
         font-size: var(--font-md);
     }
 
@@ -93,7 +93,7 @@
 
     /* Tab responsive styling */
     .tab {
-        padding: 8px var(--space-xs);
+        padding: var(--space-sm) var(--space-xs);
         font-size: var(--font-sm);
         gap: var(--space-2xs);
     }
@@ -120,8 +120,8 @@
     }
 
     .header-btn {
-        width: 28px;
-        height: 28px;
+        width: var(--icon-button-sm);
+        height: var(--icon-button-sm);
         font-size: var(--icon-sm);
     }
 
@@ -134,92 +134,92 @@
     }
 
     .status-dot {
-        width: 4px;
-        height: 4px;
+        width: var(--space-2xs);
+        height: var(--space-2xs);
     }
 
     .version {
         font-size: var(--font-xs);
-        padding: 2px 4px;
+        padding: var(--space-2xs) var(--space-2xs);
     }
 
     .header-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+        width: var(--icon-button-md);
+        height: var(--icon-button-md);
+        font-size: var(--icon-sm);
     }
 
     /* Summary tiles compact spacing */
     .summary-section {
-        margin-bottom: 12px;
+        margin-bottom: var(--space-md);
     }
 
     .summary-header {
-        margin-bottom: 8px;
+        margin-bottom: var(--space-sm);
     }
 
     .summary-section.collapsed .summary-header {
-        padding: 12px;
+        padding: var(--space-md);
     }
 
     .summary-compact {
-        font-size: 10px;
-        gap: 4px;
-        margin-left: 8px;
+        font-size: var(--font-xs);
+        gap: var(--space-2xs);
+        margin-left: var(--space-sm);
     }
 
     .compact-stat {
-        font-size: 14px;
+        font-size: var(--font-md);
     }
 
     .compact-stat-small {
-        font-size: 10px;
+        font-size: var(--font-xs);
     }
 
     .compact-stat-small i {
-        font-size: 11px;
+        font-size: var(--font-xs);
     }
 
     .summary-title {
-        font-size: 12px;
+        font-size: var(--font-sm);
     }
 
     .summary {
-        gap: 8px;
+        gap: var(--space-sm);
     }
 
     .summary-card {
-        padding: 12px;
+        padding: var(--space-md);
     }
 
     .card-icon {
-        font-size: 22px;
+        font-size: var(--font-3xl);
     }
 
     .summary-label {
-        font-size: 11px;
+        font-size: var(--font-xs);
     }
 
     .summary-value {
-        font-size: 20px;
+        font-size: var(--font-2xl);
     }
 }
 
 /* Extra small screens - icon only tabs */
 @media (max-width: 360px) {
     .tabs {
-        padding: 3px;
+        padding: var(--space-2xs);
     }
 
     .tab {
-        padding: 10px 4px;
-        font-size: 11px;
-        gap: 3px;
+        padding: var(--space-sm) var(--space-2xs);
+        font-size: var(--font-xs);
+        gap: var(--space-2xs);
         flex-direction: column;
     }
 
     .tab i {
-        font-size: 18px;
+        font-size: var(--icon-md);
     }
 }
 
@@ -451,8 +451,8 @@ h1 i {
 }
 
 .collapse-btn {
-    width: 28px;
-    height: 28px;
+    width: var(--icon-button-sm);
+    height: var(--icon-button-sm);
     border-radius: var(--radius-md);
     border: none;
     background: transparent;
@@ -566,7 +566,7 @@ h1 i {
 
 .tab {
     flex: 1;
-    padding: 10px;
+    padding: var(--space-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -715,8 +715,8 @@ button.primary .btn-icon {
 
 button.primary .btn-spinner {
     display: none;
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     border: 2px solid rgba(255,255,255,0.3);
     border-top-color: var(--color-on-primary);
     border-radius: 50%;
@@ -743,7 +743,7 @@ button.primary.loading .btn-spinner {
     flex: 1;
     padding: var(--space-md);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--space-sm);
     background: transparent;
     font-size: var(--font-lg);
     font-weight: 500;
@@ -755,7 +755,7 @@ button.primary.loading .btn-spinner {
 .type-option.active {
     background: var(--color-toggle-active-bg);
     color: var(--color-text);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 .type-option:active {
@@ -768,7 +768,7 @@ button.primary.loading .btn-spinner {
 
 .transaction-item {
     padding: var(--space-lg);
-    padding-left: 20px;
+    padding-left: var(--space-xl);
     border-bottom: 1px solid var(--color-bg);
     display: flex;
     align-items: center;
@@ -779,23 +779,23 @@ button.primary.loading .btn-spinner {
 .transaction-item::before {
     content: '';
     position: absolute;
-    left: 8px;
+    left: var(--space-sm);
     top: 50%;
     transform: translateY(-50%);
-    width: 4px;
+    width: var(--space-2xs);
     height: 50%;
-    border-radius: 4px;
+    border-radius: var(--space-2xs);
     background: transparent;
 }
 
 .transaction-item.income::before {
     background: var(--gradient-income);
-    box-shadow: 0 0 8px rgba(52, 199, 89, 0.3);
+    box-shadow: 0 0 var(--space-sm) rgba(52, 199, 89, 0.3);
 }
 
 .transaction-item.expense::before {
     background: var(--gradient-expense);
-    box-shadow: 0 0 8px rgba(255, 59, 48, 0.3);
+    box-shadow: 0 0 var(--space-sm) rgba(255, 59, 48, 0.3);
 }
 
 .transaction-item.income {
@@ -862,15 +862,15 @@ button.primary.loading .btn-spinner {
 /* Mobile transaction list improvements */
 @media (max-width: 480px) {
     .transaction-item {
-        padding: 12px;
-        padding-left: 24px;
+        padding: var(--space-md);
+        padding-left: var(--space-2xl);
         display: grid;
         grid-template-columns: 1fr auto;
         grid-template-areas:
             "details amount"
             "details actions";
-        column-gap: 12px;
-        row-gap: 6px;
+        column-gap: var(--space-md);
+        row-gap: var(--space-xs);
         align-items: center;
     }
 
@@ -883,7 +883,7 @@ button.primary.loading .btn-spinner {
     }
 
     .transaction-category {
-        font-size: 14px;
+        font-size: var(--font-md);
     }
 
     .transaction-note {
@@ -911,7 +911,7 @@ button.primary.loading .btn-spinner {
 
     .transaction-amount.negative,
     .transaction-amount.positive {
-        padding: 2px 6px;
+        padding: var(--space-2xs) var(--space-xs);
         border-radius: var(--radius-md);
         display: inline-block;
         background: var(--color-bg);
@@ -933,9 +933,9 @@ button.primary.loading .btn-spinner {
     }
 
     .action-btn {
-        width: 26px;
-        height: 26px;
-        font-size: 13px;
+        width: var(--icon-button-sm);
+        height: var(--icon-button-sm);
+        font-size: var(--font-sm);
     }
 }
 
@@ -948,13 +948,13 @@ button.primary.loading .btn-spinner {
     gap: var(--space-sm);
     margin-bottom: var(--space-lg);
     overflow-x: auto;
-    padding: 4px 0;
+    padding: var(--space-2xs) 0;
 }
 
 .filter-btn {
     padding: var(--space-sm) var(--space-lg);
     border: 2px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     background: var(--color-surface);
     font-size: var(--font-md);
     color: var(--color-text);
@@ -1017,7 +1017,7 @@ button.primary.loading .btn-spinner {
 }
 
 .toolbar-btn {
-    padding: 10px var(--space-lg);
+    padding: var(--space-sm) var(--space-lg);
     background: var(--color-surface);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -1042,14 +1042,14 @@ button.primary.loading .btn-spinner {
 .settings-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--space-sm);
 }
 
 .currency-display {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2xs);
-    padding: 2px 6px;
+    padding: var(--space-2xs) var(--space-xs);
     border-radius: var(--radius-pill);
     background: var(--color-bg);
     font-weight: 600;
@@ -1060,7 +1060,7 @@ button.primary.loading .btn-spinner {
 @media (max-width: 480px) {
     .toolbar {
         justify-content: flex-start;
-        row-gap: 8px;
+        row-gap: var(--space-sm);
     }
 
     .toolbar-spacer {
@@ -1068,8 +1068,8 @@ button.primary.loading .btn-spinner {
     }
 
     .toolbar-btn {
-        padding: 8px 12px;
-        font-size: 13px;
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-sm);
     }
 
     .settings-actions {
@@ -1165,8 +1165,8 @@ button.primary.loading .btn-spinner {
     color: var(--color-text-muted);
     cursor: pointer;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: var(--icon-button-md);
+    height: var(--icon-button-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1218,7 +1218,7 @@ button.primary.loading .btn-spinner {
 .currency-symbol {
     font-size: var(--font-4xl);
     font-weight: 600;
-    width: 36px;
+    width: var(--icon-button-lg);
     text-align: center;
 }
 
@@ -1264,16 +1264,16 @@ button.primary.loading .btn-spinner {
 
 .success-message {
     position: fixed;
-    top: 20px;
+    top: var(--space-xl);
     left: 50%;
     transform: translateX(-50%);
     background: var(--color-success);
     color: var(--color-on-primary);
-    padding: var(--button-padding-y) 28px;
+    padding: var(--button-padding-y) var(--space-3xl);
     border-radius: var(--radius-lg);
     font-weight: 600;
-    font-size: 15px;
-    box-shadow: 0 6px 20px rgba(52, 199, 89, 0.4);
+    font-size: var(--font-md);
+    box-shadow: 0 var(--space-xs) var(--space-xl) rgba(52, 199, 89, 0.4);
     z-index: 1000;
     display: none;
     animation: slideDownBounce var(--transition-bounce);
@@ -1282,7 +1282,7 @@ button.primary.loading .btn-spinner {
 .success-message.show {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-sm);
 }
 
 .success-message::before {
@@ -1290,8 +1290,8 @@ button.primary.loading .btn-spinner {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     background: rgba(255,255,255,0.2);
     border-radius: 50%;
     font-weight: bold;
@@ -1319,8 +1319,8 @@ button.primary.loading .btn-spinner {
 
 .install-prompt button {
     background: var(--color-surface);
-    color: #667eea;
-    padding: 8px 16px;
+    color: var(--color-install);
+    padding: var(--space-sm) var(--space-lg);
     border: none;
     border-radius: var(--radius-sm);
     font-weight: 600;
@@ -1361,7 +1361,7 @@ button.primary.loading .btn-spinner {
 }
 
 .update-prompt button {
-    padding: 8px 16px;
+    padding: var(--space-sm) var(--space-lg);
     border: none;
     border-radius: var(--radius-sm);
     font-weight: 600;
@@ -1524,12 +1524,12 @@ button.primary.loading .btn-spinner {
 
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: calc(var(--space-xl) * 2) var(--space-xl);
     color: var(--color-text-muted);
 }
 
 .empty-state-icon {
-    font-size: 48px;
+    font-size: calc(var(--font-5xl) * 2);
     margin-bottom: var(--space-lg);
     opacity: 0.5;
 }
@@ -1562,7 +1562,7 @@ button.primary.loading .btn-spinner {
     border-top: 1px solid var(--color-border);
     display: flex;
     padding: var(--space-sm);
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 -2px var(--space-sm) rgba(0,0,0,0.05);
 }
 
 .nav-item {
@@ -1619,15 +1619,15 @@ button.primary.loading .btn-spinner {
 @keyframes successPulse {
     0% {
         transform: scale(1);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
     }
     50% {
         transform: scale(1.02);
-        box-shadow: 0 0 0 8px rgba(52, 199, 89, 0.2), 0 4px 20px rgba(52, 199, 89, 0.3);
+        box-shadow: 0 0 0 var(--space-sm) rgba(52, 199, 89, 0.2), 0 var(--space-2xs) var(--space-xl) rgba(52, 199, 89, 0.3);
     }
     100% {
         transform: scale(1);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
     }
 }
 
