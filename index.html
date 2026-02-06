@@ -40,14 +40,116 @@
         </div>
     </div>
 
+    <!-- Restore Preview Modal -->
+    <div class="modal" id="restorePreviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="ri-file-list-line"></i> Backup Preview</h3>
+                <button class="close-btn" onclick="closeRestorePreview()" aria-label="Close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="backup-preview-info">
+                <div class="preview-item">
+                    <span class="preview-label">Backup Date:</span>
+                    <span class="preview-value" id="previewBackupDate">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Transaction Count:</span>
+                    <span class="preview-value" id="previewCount">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Date Range:</span>
+                    <span class="preview-value" id="previewDateRange">-</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Currency:</span>
+                    <span class="preview-value" id="previewCurrency">-</span>
+                </div>
+            </div>
+
+            <div class="modal-info">
+                <i class="ri-information-line"></i>
+                <strong>Merge Mode:</strong> Your existing transactions will be preserved.
+                New transactions from the backup will be added, and duplicates will be automatically skipped.
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeRestorePreview()">
+                    Cancel
+                </button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmRestore()">
+                    Restore Backup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore Report Modal -->
+    <div class="modal" id="restoreReportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="ri-file-check-line"></i> Restore Complete</h3>
+                <button class="close-btn" onclick="closeRestoreReport()" aria-label="Close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="restore-report-info">
+                <div class="report-stat">
+                    <i class="ri-file-list-line report-icon"></i>
+                    <div class="report-details">
+                        <span class="report-label">Total in backup</span>
+                        <span class="report-value" id="reportBackupTotal">-</span>
+                    </div>
+                </div>
+                <div class="report-stat success">
+                    <i class="ri-check-line report-icon"></i>
+                    <div class="report-details">
+                        <span class="report-label">New transactions added</span>
+                        <span class="report-value" id="reportAdded">-</span>
+                    </div>
+                </div>
+                <div class="report-stat warning">
+                    <i class="ri-alert-line report-icon"></i>
+                    <div class="report-details">
+                        <span class="report-label">Duplicates skipped</span>
+                        <span class="report-value" id="reportDuplicates">-</span>
+                    </div>
+                </div>
+                <div class="report-stat total">
+                    <i class="ri-database-2-line report-icon"></i>
+                    <div class="report-details">
+                        <span class="report-label">Total transactions now</span>
+                        <span class="report-value" id="reportCurrentTotal">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-confirm" onclick="closeRestoreReport()">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>
-                <span><i class="ri-wallet-3-line"></i> FinChronicle</span>
-                <span class="version" id="appVersion">v3.4.0</span>
-            </h1>
-            <div class="status">Offline Ready</div>
+            <div class="header-content">
+                <h1><i class="ri-wallet-3-line"></i> FinChronicle</h1>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="quickAddTransaction()" aria-label="Quick Add Transaction" title="Quick Add">
+                        <i class="ri-add-line"></i>
+                    </button>
+                </div>
+                <div class="header-meta">
+                    <span class="status-inline"><span class="status-dot"></span> Offline</span>
+                    <span class="version" id="appVersion">v3.5.0</span>
+                </div>
+            </div>
         </header>
 
         <!-- Main Content -->
@@ -73,20 +175,40 @@
             <!-- Summary Cards -->
             <div class="summary">
                 <div class="summary-card">
-                    <div class="summary-label">This Month</div>
-                    <div class="summary-value" id="monthNet">0</div>
+                    <div class="card-icon">
+                        <i class="ri-calendar-check-line"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-label">This Month</div>
+                        <div class="summary-value" id="monthNet">0</div>
+                    </div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-label">Total Entries</div>
-                    <div class="summary-value" id="totalEntries">0</div>
+                    <div class="card-icon">
+                        <i class="ri-list-check-2"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-label">Total Entries</div>
+                        <div class="summary-value" id="totalEntries">0</div>
+                    </div>
                 </div>
-                <div class="summary-card">
-                    <div class="summary-label">Income</div>
-                    <div class="summary-value positive" id="monthIncome">0</div>
+                <div class="summary-card positive">
+                    <div class="card-icon">
+                        <i class="ri-arrow-up-circle-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-label">Income</div>
+                        <div class="summary-value" id="monthIncome">0</div>
+                    </div>
                 </div>
-                <div class="summary-card">
-                    <div class="summary-label">Expenses</div>
-                    <div class="summary-value negative" id="monthExpense">0</div>
+                <div class="summary-card negative">
+                    <div class="card-icon">
+                        <i class="ri-arrow-down-circle-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-label">Expenses</div>
+                        <div class="summary-value" id="monthExpense">0</div>
+                    </div>
                 </div>
             </div>
             <!-- Currency Selector Modal -->
@@ -219,6 +341,16 @@
                         </button>
                         <input type="file" id="importFile" accept=".csv,text/csv" style="display: none;"
                             onchange="handleImport(event)">
+                        <button class="toolbar-btn" onclick="createBackup()" aria-label="Create Backup">
+                            <i class="ri-save-line"></i>
+                            <span>Create Backup</span>
+                        </button>
+                        <button class="toolbar-btn" onclick="triggerRestore()" aria-label="Restore from Backup">
+                            <i class="ri-upload-cloud-line"></i>
+                            <span>Restore Backup</span>
+                        </button>
+                        <input type="file" id="restoreFile" accept=".csv,text/csv" style="display: none;"
+                            onchange="handleRestore(event)">
                         <button class="toolbar-btn" onclick="checkForUpdates()" aria-label="Check for updates"
                             id="updateCheckBtn">
                             <i class="ri-refresh-line"></i>
@@ -246,7 +378,7 @@
 
     <script>
         // App Version - Update this when releasing new features
-        const APP_VERSION = '3.4.0';
+        const APP_VERSION = '3.5.0';
         const VERSION_KEY = 'app_version';
 
         // IndexedDB Configuration
@@ -513,6 +645,23 @@
             });
         }
 
+        // Clear all transactions from IndexedDB (for restore)
+        function clearAllTransactions() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+
+                const tx = db.transaction([STORE_NAME], 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.clear();
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
         // Bulk save transactions to IndexedDB (for import)
         function bulkSaveTransactionsToDB(transactionsArray) {
             return new Promise((resolve, reject) => {
@@ -702,7 +851,17 @@
             const net = income - expense;
 
             document.getElementById('monthNet').textContent = formatCurrency(net);
-            document.getElementById('monthNet').className = 'summary-value ' + (net >= 0 ? 'positive' : 'negative');
+            document.getElementById('monthNet').className = 'summary-value';
+
+            // Update parent card color class
+            const monthCard = document.getElementById('monthNet').closest('.summary-card');
+            monthCard.classList.remove('positive', 'negative');
+            if (net >= 0) {
+                monthCard.classList.add('positive');
+            } else {
+                monthCard.classList.add('negative');
+            }
+
             document.getElementById('totalEntries').textContent = transactions.length;
             document.getElementById('monthIncome').textContent = formatCurrency(income);
             document.getElementById('monthExpense').textContent = formatCurrency(expense);
@@ -978,6 +1137,18 @@
             document.getElementById(tab + 'Tab').classList.add('active');
         }
 
+        // Quick Add Transaction (from header button)
+        function quickAddTransaction() {
+            // Switch to Add tab
+            document.getElementById('add-tab').click();
+
+            // Scroll to top and focus on amount input
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                document.getElementById('amount').focus();
+            }, 300);
+        }
+
         // Change grouping
         function changeGrouping(type) {
             currentGrouping = type;
@@ -1098,6 +1269,79 @@
             showMessage('Export successful!');
         }
 
+        // Generate backup metadata header
+        function generateBackupMetadata() {
+            const count = transactions.length;
+            const dates = transactions.map(t => new Date(t.date)).sort((a, b) => a - b);
+            const oldestDate = dates.length > 0 ? dates[0].toISOString().slice(0, 10) : '';
+            const newestDate = dates.length > 0 ? dates[dates.length - 1].toISOString().slice(0, 10) : '';
+            const dateRange = dates.length > 0 ? `${oldestDate} to ${newestDate}` : 'No transactions';
+            const backupDate = new Date().toISOString();
+            const currencyCode = getCurrency();
+
+            return [
+                '# FinChronicle Backup',
+                `# Version: ${APP_VERSION}`,
+                `# Backup Date: ${backupDate}`,
+                `# Transaction Count: ${count}`,
+                `# Date Range: ${dateRange}`,
+                `# Currency: ${currencyCode}`
+            ].join('\n');
+        }
+
+        // Create backup with metadata
+        function createBackup() {
+            if (transactions.length === 0) {
+                showMessage('No transactions to backup!');
+                return;
+            }
+
+            const currencyCode = getCurrency();
+
+            // Generate metadata header
+            const metadata = generateBackupMetadata();
+
+            // Generate CSV headers (include ID and CreatedAt)
+            const headers = ['Date', 'Type', 'Category', `Amount (${currencyCode})`, 'Notes', 'ID', 'CreatedAt'];
+
+            // Generate CSV rows with all fields
+            const rows = transactions.map(t => [
+                t.date,
+                t.type,
+                t.category,
+                t.amount,
+                t.notes || '',
+                t.id,
+                t.createdAt
+            ]);
+
+            // Build CSV content
+            let csv = metadata + '\n';
+            csv += headers.join(',') + '\n';
+            csv += rows.map(row => row.map(cell =>
+                `"${String(cell).replace(/"/g, '""')}"`
+            ).join(',')).join('\n');
+
+            // Create timestamp-based filename
+            const now = new Date();
+            const timestamp = now.toISOString()
+                .slice(0, 19)
+                .replace('T', '-')
+                .replace(/:/g, '');
+            const filename = `finchronicle-backup-${timestamp}.csv`;
+
+            // Trigger download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showMessage('Backup created successfully!');
+        }
+
         function triggerImport() {
             const input = document.getElementById('importFile');
             input.value = '';
@@ -1124,6 +1368,266 @@
             reader.readAsText(file);
         }
 
+        // Trigger restore file picker
+        function triggerRestore() {
+            const input = document.getElementById('restoreFile');
+            input.value = '';
+            input.click();
+        }
+
+        // Handle restore file selection
+        function handleRestore(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const backupData = parseBackupCSV(reader.result);
+
+                    if (!backupData.valid) {
+                        showMessage(`Invalid backup file: ${backupData.error}`);
+                        return;
+                    }
+
+                    // Store backup data temporarily for preview
+                    window._pendingRestoreData = backupData;
+
+                    // Show preview modal
+                    showRestorePreview(backupData);
+
+                } catch (err) {
+                    console.error('Backup parse error:', err);
+                    showMessage('Failed to read backup file. Please check the file format.');
+                }
+            };
+
+            reader.onerror = () => {
+                showMessage('Failed to read file. Please try again.');
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Parse backup CSV with metadata
+        function parseBackupCSV(text) {
+            const lines = text.split('\n');
+            const metadata = {};
+            let dataStartIndex = 0;
+
+            // Extract metadata from comment lines
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#')) {
+                    const match = line.match(/^#\s*([^:]+):\s*(.+)$/);
+                    if (match) {
+                        metadata[match[1].trim()] = match[2].trim();
+                    }
+                } else {
+                    dataStartIndex = i;
+                    break;
+                }
+            }
+
+            // Parse CSV data starting from data line
+            const csvData = lines.slice(dataStartIndex).join('\n');
+            const rows = parseCSV(csvData).filter(row => row.some(cell => cell.trim() !== ''));
+
+            if (rows.length < 2) {
+                return { valid: false, error: 'No transaction data found' };
+            }
+
+            // Validate headers
+            const headers = rows[0].map(h => h.trim().toLowerCase());
+            const requiredHeaders = ['date', 'type', 'category', 'amount'];
+            const hasRequired = requiredHeaders.every(h =>
+                headers.some(header => header.includes(h))
+            );
+
+            if (!hasRequired) {
+                return { valid: false, error: 'Missing required columns (Date, Type, Category, Amount)' };
+            }
+
+            // Find column indices
+            const dateIndex = headers.findIndex(h => h === 'date');
+            const typeIndex = headers.findIndex(h => h === 'type');
+            const categoryIndex = headers.findIndex(h => h === 'category');
+            const amountIndex = headers.findIndex(h => h.includes('amount'));
+            const notesIndex = headers.findIndex(h => h === 'notes');
+            const idIndex = headers.findIndex(h => h === 'id');
+            const createdAtIndex = headers.findIndex(h => h === 'createdat');
+
+            // Parse transactions
+            const parsedTransactions = [];
+            const dataRows = rows.slice(1);
+
+            dataRows.forEach((row, i) => {
+                const rawDate = (row[dateIndex] || '').trim();
+                const rawAmount = (row[amountIndex] || '').replace(/,/g, '').trim();
+                const amount = parseFloat(rawAmount);
+
+                if (!rawDate || isNaN(amount)) {
+                    return; // Skip invalid rows
+                }
+
+                const transaction = {
+                    id: idIndex !== -1 && row[idIndex] ? parseInt(row[idIndex]) : Date.now() + i,
+                    type: typeIndex !== -1 ? (row[typeIndex] || '').trim().toLowerCase() : 'expense',
+                    amount: Math.abs(amount),
+                    category: categoryIndex !== -1 ? (row[categoryIndex] || '').trim() : 'Other Expense',
+                    date: rawDate,
+                    notes: notesIndex !== -1 ? (row[notesIndex] || '').trim() : '',
+                    createdAt: createdAtIndex !== -1 && row[createdAtIndex] ? row[createdAtIndex].trim() : new Date().toISOString()
+                };
+
+                // Ensure valid type
+                if (transaction.type !== 'income' && transaction.type !== 'expense') {
+                    transaction.type = 'expense';
+                }
+
+                parsedTransactions.push(transaction);
+            });
+
+            if (parsedTransactions.length === 0) {
+                return { valid: false, error: 'No valid transactions found in backup' };
+            }
+
+            return {
+                valid: true,
+                metadata,
+                transactions: parsedTransactions
+            };
+        }
+
+        // Show restore preview modal
+        function showRestorePreview(backupData) {
+            const modal = document.getElementById('restorePreviewModal');
+
+            // Populate preview data
+            document.getElementById('previewBackupDate').textContent =
+                backupData.metadata['Backup Date'] ?
+                    formatDate(backupData.metadata['Backup Date'].slice(0, 10)) :
+                    'Unknown';
+
+            document.getElementById('previewCount').textContent = backupData.transactions.length;
+
+            // Calculate date range
+            const dates = backupData.transactions.map(t => new Date(t.date)).sort((a, b) => a - b);
+            const oldestDate = dates.length > 0 ? formatDate(dates[0].toISOString().slice(0, 10)) : '-';
+            const newestDate = dates.length > 0 ? formatDate(dates[dates.length - 1].toISOString().slice(0, 10)) : '-';
+            document.getElementById('previewDateRange').textContent = `${oldestDate} to ${newestDate}`;
+
+            document.getElementById('previewCurrency').textContent =
+                backupData.metadata['Currency'] || getCurrency();
+
+            // Show modal
+            modal.classList.add('show');
+        }
+
+        // Check if transaction is a duplicate
+        function isDuplicateTransaction(newTransaction, existingTransactions) {
+            return existingTransactions.some(existing => {
+                return existing.date === newTransaction.date &&
+                       existing.type === newTransaction.type &&
+                       existing.category === newTransaction.category &&
+                       existing.amount === newTransaction.amount &&
+                       (existing.notes || '') === (newTransaction.notes || '');
+            });
+        }
+
+        // Close restore preview modal
+        function closeRestorePreview() {
+            const modal = document.getElementById('restorePreviewModal');
+            modal.classList.remove('show');
+            window._pendingRestoreData = null;
+        }
+
+        // Close restore report modal
+        function closeRestoreReport() {
+            const modal = document.getElementById('restoreReportModal');
+            modal.classList.remove('show');
+        }
+
+        // Show restore report modal
+        function showRestoreReport(stats) {
+            const modal = document.getElementById('restoreReportModal');
+
+            // Populate report statistics
+            document.getElementById('reportBackupTotal').textContent = stats.backupTotal;
+            document.getElementById('reportAdded').textContent = stats.added;
+            document.getElementById('reportDuplicates').textContent = stats.duplicates;
+            document.getElementById('reportCurrentTotal').textContent = stats.currentTotal;
+
+            // Show modal
+            modal.classList.add('show');
+        }
+
+        // Confirm and execute restore (Merge Mode with Duplicate Detection)
+        async function confirmRestore() {
+            const backupData = window._pendingRestoreData;
+            if (!backupData) return;
+
+            // Close preview modal
+            closeRestorePreview();
+
+            // Show loading message
+            showMessage('Restoring backup...');
+
+            try {
+                // Get current transactions from database
+                await loadDataFromDB();
+
+                // Track statistics
+                const stats = {
+                    backupTotal: backupData.transactions.length,
+                    added: 0,
+                    duplicates: 0,
+                    currentTotal: 0
+                };
+
+                // Filter out duplicates and collect new transactions
+                const newTransactions = [];
+
+                backupData.transactions.forEach(backupTxn => {
+                    if (isDuplicateTransaction(backupTxn, transactions)) {
+                        stats.duplicates++;
+                    } else {
+                        newTransactions.push(backupTxn);
+                        stats.added++;
+                    }
+                });
+
+                // Import only new (non-duplicate) transactions
+                if (newTransactions.length > 0) {
+                    await bulkSaveTransactionsToDB(newTransactions);
+
+                    // Add to in-memory array
+                    transactions.push(...newTransactions);
+                    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                }
+
+                // Calculate current total
+                stats.currentTotal = transactions.length;
+
+                // Refresh UI
+                updateUI();
+
+                // Show detailed report
+                showRestoreReport(stats);
+
+            } catch (err) {
+                console.error('Restore failed:', err);
+                showMessage('Restore failed. Your existing data was preserved.');
+
+                // Reload data to ensure consistency
+                try {
+                    await loadDataFromDB();
+                    updateUI();
+                } catch (reloadErr) {
+                    console.error('Failed to reload data:', reloadErr);
+                }
+            }
+        }
 
         function importFromCSV(text) {
             const rows = parseCSV(text).filter(row => row.some(cell => cell.trim() !== ''));

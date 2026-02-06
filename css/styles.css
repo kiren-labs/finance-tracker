@@ -105,6 +105,47 @@
         font-size: 16px;
     }
 
+    /* Header compact on mobile */
+    header {
+        padding: 10px 12px;
+    }
+
+    h1 {
+        font-size: 16px;
+    }
+
+    h1 i {
+        font-size: 18px;
+    }
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .header-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .header-meta {
+        gap: 4px;
+    }
+
+    .status-inline {
+        font-size: 10px;
+    }
+
+    .status-dot {
+        width: 5px;
+        height: 5px;
+    }
+
+    .version {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
     /* Summary tiles compact spacing */
     .summary {
         gap: 8px;
@@ -113,6 +154,10 @@
 
     .summary-card {
         padding: 12px;
+    }
+
+    .card-icon {
+        font-size: 24px;
     }
 
     .summary-label {
@@ -175,41 +220,102 @@ body {
 
 header {
     background: white;
-    padding: 20px;
+    padding: 12px 16px;
     border-radius: 12px;
     margin-bottom: 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-h1 {
-    font-size: 24px;
-    color: #1d1d1f;
-    margin-bottom: 8px;
+.header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
+    flex-wrap: nowrap;
+    min-width: 0;
 }
 
-.version {
-    font-size: 12px;
-    color: #6e6e73;
-    font-weight: 400;
+h1 {
+    font-size: 22px;
+    color: #1d1d1f;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+h1 i {
+    font-size: 26px;
+    color: #0051D5;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+}
+
+.header-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 2px solid #e5e5e7;
+    background: white;
+    color: #0051D5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 18px;
+}
+
+.header-btn:hover {
     background: #f5f5f7;
-    padding: 4px 8px;
-    border-radius: 6px;
+    border-color: #0051D5;
 }
 
-.status {
-    font-size: 14px;
+.header-btn:active {
+    transform: scale(0.95);
+}
+
+.header-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.status-inline {
+    font-size: 11px;
     color: #00a83e;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    font-weight: 500;
 }
 
-.status::before {
-    content: "●";
-    font-size: 12px;
+.status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00a83e;
+}
+
+.version {
+    font-size: 11px;
+    color: #6e6e73;
+    font-weight: 500;
+    background: #f5f5f7;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 /* ==========================================================================
@@ -225,15 +331,34 @@ h1 {
 
 .summary-card {
     background: white;
-    padding: 16px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex: 1;
 }
 
 .summary-label {
     font-size: 12px;
     color: #6e6e73;
     margin-bottom: 4px;
+    font-weight: 500;
 }
 
 .summary-value {
@@ -241,11 +366,27 @@ h1 {
     font-weight: 600;
 }
 
-.positive {
+.positive .card-icon {
     color: #34c759;
 }
 
-.negative {
+.positive .summary-value {
+    color: #34c759;
+}
+
+.negative .card-icon {
+    color: #ff3b30;
+}
+
+.negative .summary-value {
+    color: #ff3b30;
+}
+
+.summary-card:not(.positive):not(.negative) .card-icon {
+    color: #0051D5;
+}
+
+.secondary-card.negative .summary-value {
     color: #ff3b30;
 }
 
@@ -1079,6 +1220,144 @@ button.primary.loading .btn-spinner {
 .update-btn-secondary {
     background: rgba(255, 255, 255, 0.2);
     color: white;
+}
+
+/* ==========================================================================
+   Backup Preview Modal
+   ========================================================================== */
+
+.backup-preview-info {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f5f5f7;
+    border-radius: 8px;
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-label {
+    font-size: 14px;
+    color: #6e6e73;
+    font-weight: 500;
+}
+
+.preview-value {
+    font-size: 14px;
+    color: #1d1d1f;
+    font-weight: 600;
+}
+
+.modal-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #856404;
+}
+
+.modal-warning i {
+    font-size: 20px;
+    color: #ffc107;
+    flex-shrink: 0;
+}
+
+.modal-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #d1ecf1;
+    border: 1px solid #17a2b8;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #0c5460;
+}
+
+.modal-info i {
+    font-size: 20px;
+    color: #17a2b8;
+    flex-shrink: 0;
+}
+
+/* Restore Report Modal */
+.restore-report-info {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.report-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f5f5f7;
+    border-radius: 8px;
+    border-left: 4px solid #6e6e73;
+}
+
+.report-stat.success {
+    background: #eef8f0;
+    border-left-color: #34c759;
+}
+
+.report-stat.success .report-icon {
+    color: #34c759;
+}
+
+.report-stat.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.report-stat.warning .report-icon {
+    color: #ffc107;
+}
+
+.report-stat.total {
+    background: #e6f0ff;
+    border-left-color: #0051D5;
+}
+
+.report-stat.total .report-icon {
+    color: #0051D5;
+}
+
+.report-icon {
+    font-size: 24px;
+    color: #6e6e73;
+    flex-shrink: 0;
+}
+
+.report-details {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-label {
+    font-size: 14px;
+    color: #6e6e73;
+    font-weight: 500;
+}
+
+.report-value {
+    font-size: 18px;
+    color: #1d1d1f;
+    font-weight: 600;
 }
 
 /* ==========================================================================
