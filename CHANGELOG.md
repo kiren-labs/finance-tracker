@@ -17,6 +17,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.6.0] - 2026-02-07
+
+### Added
+- 📱 **iOS Optimizations**: Professional mobile experience
+  - Disabled zoom for app-like experience (no accidental zoom)
+  - Increased touch targets to 48px+ (iOS standard)
+  - Safe area support for iPhone notch and home indicator
+  - Larger fonts on mobile (14-16px minimum)
+  - Bottom navigation height increased to 60px
+  - Better spacing and padding throughout
+
+### Changed
+- 🔍 Enhanced compact summary readability
+  - Larger font sizes (main: 18px, stats: 14px)
+  - Better spacing between elements
+  - More readable separators and icons
+- 📊 Improved form usability on mobile
+  - Labels: 16px, bolder (600 weight)
+  - All inputs: min-height 48px
+  - Primary button: min-height 52px
+  - Better touch targets throughout
+- 🎯 Bottom navigation improvements
+  - Icons: 26px (larger and clearer)
+  - Labels: 14px font
+  - Item height: 60px (easier tapping)
+  - Better vertical alignment
+
+### Technical
+- Viewport meta updated: `maximum-scale=1.0, user-scalable=no`
+- Added `env(safe-area-inset-bottom)` to bottom nav
+- Mobile token scale increased for better readability
+- All CSS tokens cleanup completed (95%+ coverage)
+
+---
+
 ## [3.5.1] - 2026-02-06
 
 ### Added
@@ -48,6 +83,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📊 Added "Summary" section header with collapse control
 - 📏 Compact summary view shows all stats in one line when collapsed
 - 🔄 Both detailed cards and compact view stay in sync via updateSummary()
+- 📱 **iOS Optimizations**: Better mobile experience
+  - Disabled zoom (prevents accidental zoom, app-like experience)
+  - Increased bottom nav height to 60px (better touch targets)
+  - Larger font sizes on mobile (14px labels, 16px inputs)
+  - Minimum touch target: 48x48px for all interactive elements
+  - Added safe-area-inset support for iPhone notch/home indicator
+  - Increased spacing and padding for better readability
+  - Bottom nav icons: 26px (larger and clearer)
 
 ---
 
@@ -117,6 +160,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Data integrity validation (dates, amounts, types)
 - Error recovery: if restore fails, existing data is preserved
 - Safe merge mode prevents accidental data loss
+
+### Technical
+- Added `toggleSummaryCollapse()` and `loadSummaryState()` functions
+- Compact summary dynamically updates via `updateSummary()`
+- All hardcoded CSS values replaced with design tokens
+- Added `--color-install` token for install prompt
+- Mobile font scale increased: 13px → 14px, 15px → 16px
+- Bottom nav uses `env(safe-area-inset-bottom)` for iOS safe areas
+- Viewport meta updated: `maximum-scale=1.0, user-scalable=no`
+- Minimum touch targets: 48px for iOS compliance
+- Token coverage: 95%+ (only layout-specific values remain hardcoded)
 
 ---
 
@@ -354,6 +408,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v3.6.0** - iOS optimizations, enhanced mobile UX (2026-02-07)
 - **v3.5.1** - Bottom navigation, design tokens, UI refinements (2026-02-06)
 - **v3.5.0** - Backup and restore system with preview (2026-02-06)
 - **v3.4.0** - IndexedDB storage, enhanced form feedback, mobile improvements (2026-02-06)
