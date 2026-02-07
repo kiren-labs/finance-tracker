@@ -1,21 +1,29 @@
 /* FinChronicle - Dark Mode Styles */
 /* Version: 3.6.0 */
-
+/* # */
 /* Dark mode token overrides */
 body.dark-mode {
     --color-bg: #000000;
     --color-surface: #1c1c1e;
     --color-text: #ffffff;
-    --color-text-muted: #98989d;
-    --color-text-subtle: #98989d;
+    --color-text-muted: #aeaeb2;
+    --color-text-subtle: #8e8e93;
     --color-border: #38383a;
-    --color-primary-hover: #0061f5;
+    --color-primary: #0053AD;
+    --color-primary-hover: #409CFF;
+    --color-primary-strong: #409CFF;
     --color-disabled-bg: #2c2c2e;
-    --color-disabled-text: #636366;
+    --color-disabled-text: #8e8e93;
     --color-status: #30d158;
     --color-primary-soft: #1a2a3a;
     --color-toggle-bg: #2c2c2e;
     --color-toggle-active-bg: #1c1c1e;
+
+    /* Lighter semantic colors for dark mode - optimized for #1c1c1e surface */
+    --color-success: #32D74B;
+    --color-success-strong: #30E85D;
+    --color-danger: #FF453A;
+    --color-danger-strong: #FF6B6B;
 
     --shadow-sm: 0 var(--space-2xs) var(--space-sm) rgba(0,0,0,0.4);
     --shadow-md: 0 var(--space-2xs) var(--space-md) rgba(0,0,0,0.4);
@@ -55,15 +63,6 @@ body.dark-mode .pagination-info {
 }
 
 /* ==========================================================================
-   Dark Mode Base
-   ========================================================================== */
-
-body.dark-mode {
-    background: var(--color-bg);
-    color: var(--color-text);
-}
-
-/* ==========================================================================
    Dark Mode Containers
    ========================================================================== */
 
@@ -88,16 +87,18 @@ body.dark-mode textarea {
 
 body.dark-mode h1,
 body.dark-mode .transaction-category,
-body.dark-mode .summary-label,
 body.dark-mode label,
 body.dark-mode .group-header,
 body.dark-mode .modal-title {
     color: var(--color-text);
 }
 
+body.dark-mode .summary-label {
+    color: var(--color-text);
+}
+
 body.dark-mode .transaction-note,
 body.dark-mode .transaction-date,
-body.dark-mode .summary-label,
 body.dark-mode .group-total,
 body.dark-mode .modal-text {
     color: var(--color-text-muted);
@@ -110,7 +111,8 @@ body.dark-mode .filter-btn {
 }
 
 body.dark-mode .tab.active,
-body.dark-mode .nav-item.active {
+body.dark-mode .nav-item.active,
+body.dark-mode .filter-btn.active {
     color: var(--color-on-primary);
 }
 
@@ -219,6 +221,6 @@ body.dark-mode .toolbar-btn:active {
     background: var(--color-toggle-bg);
 }
 
-body.dark-mode label[for="categoryFilter"] {
+body.dark-mode .filter-label {
     color: var(--color-text-muted);
 }

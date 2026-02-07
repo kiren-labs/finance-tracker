@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Simple offline-first personal finance tracker. Track expenses and income, filter by category, export to CSV, and manage your money with beautiful charts. Works completely offline, no internet required.">
     <meta name="mobile-web-app-capable" content="yes">
@@ -26,6 +26,9 @@
 </head>
 
 <body>
+    <!-- Skip to Main Content Link (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Success Message -->
     <div class="success-message" id="successMessage">Transaction saved!</div>
 
@@ -191,40 +194,64 @@
                     </button>
                 </div>
                 <div class="summary" id="summaryCards">
-                <div class="summary-card">
+                <div class="summary-card"
+                     onclick="onSummaryTileClick('this-month')"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onSummaryTileClick('this-month')}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="View transactions for this month">
                     <div class="card-icon">
                         <i class="ri-calendar-check-line"></i>
                     </div>
                     <div class="card-content">
                         <div class="summary-label">This Month</div>
                         <div class="summary-value" id="monthNet">0</div>
+                        <div class="summary-trend" id="monthNetTrend"></div>
                     </div>
                 </div>
-                <div class="summary-card">
+                <div class="summary-card"
+                     onclick="onSummaryTileClick('total-entries')"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onSummaryTileClick('total-entries')}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="View all transactions for this month">
                     <div class="card-icon">
                         <i class="ri-list-check-2"></i>
                     </div>
                     <div class="card-content">
                         <div class="summary-label">Total Entries</div>
                         <div class="summary-value" id="totalEntries">0</div>
+                        <div class="summary-meta" id="totalEntriesMeta">This month</div>
                     </div>
                 </div>
-                <div class="summary-card positive">
+                <div class="summary-card positive"
+                     onclick="onSummaryTileClick('income')"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onSummaryTileClick('income')}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="View income transactions for this month">
                     <div class="card-icon">
                         <i class="ri-arrow-up-circle-fill"></i>
                     </div>
                     <div class="card-content">
                         <div class="summary-label">Income</div>
                         <div class="summary-value" id="monthIncome">0</div>
+                        <div class="summary-trend" id="monthIncomeTrend"></div>
                     </div>
                 </div>
-                <div class="summary-card negative">
+                <div class="summary-card negative"
+                     onclick="onSummaryTileClick('expenses')"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onSummaryTileClick('expenses')}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="View expense transactions for this month">
                     <div class="card-icon">
                         <i class="ri-arrow-down-circle-fill"></i>
                     </div>
                     <div class="card-content">
                         <div class="summary-label">Expenses</div>
                         <div class="summary-value" id="monthExpense">0</div>
+                        <div class="summary-meta" id="monthExpenseMeta"></div>
                     </div>
                 </div>
             </div>
@@ -257,7 +284,7 @@
 
             <!-- Add Transaction Tab -->
             <div id="addTab" class="tab-content active" role="tabpanel" aria-labelledby="add-tab">
-                <div class="card">
+                <div class="card" id="main-content">
                     <h2 id="formTitle" style="font-size: 20px; margin-bottom: 16px;">Add Transaction</h2>
                     <form id="transactionForm" aria-label="Add transaction form">
                         <div class="form-group">
@@ -302,7 +329,7 @@
 
                         <button type="submit" class="primary" id="submitBtn">Save Transaction</button>
                         <button type="button" class="primary" id="cancelEditBtn" onclick="cancelEdit()"
-                            style="background: #6e6e73; margin-top: 12px; display: none;">Cancel</button>
+                            style="background: #6e6e73; margin-top: 12px; display: none;" aria-label="Cancel editing">Cancel</button>
                     </form>
                 </div>
             </div>
@@ -311,9 +338,7 @@
             <div id="listTab" class="tab-content" role="tabpanel" aria-labelledby="list-tab">
                 <div class="filters" id="monthFilters"></div>
                 <div style="margin-bottom: 16px;">
-                    <label for="categoryFilter"
-                        style="display: block; font-size: 14px; color: #6e6e73; margin-bottom: 8px; font-weight: 500;">Filter
-                        by Category</label>
+                    <label for="categoryFilter" class="filter-label">Filter by Category</label>
                     <select class="category-filter" id="categoryFilter" onchange="filterByCategory()"
                         aria-label="Filter transactions by category">
                         <option value="all">All Categories</option>
@@ -323,12 +348,12 @@
                     <div id="transactionsList"></div>
                 </div>
                 <div id="paginationControls" class="pagination-container" style="display: none;">
-                    <button onclick="prevPage()" id="prevBtn" class="pagination-btn pagination-btn-prev">
+                    <button onclick="prevPage()" id="prevBtn" class="pagination-btn pagination-btn-prev" aria-label="Previous page">
                         <i class="ri-arrow-left-s-line"></i>
                         <span>Previous</span>
                     </button>
                     <div id="pageInfo" class="pagination-info"></div>
-                    <button onclick="nextPage()" id="nextBtn" class="pagination-btn pagination-btn-next">
+                    <button onclick="nextPage()" id="nextBtn" class="pagination-btn pagination-btn-next" aria-label="Next page">
                         <span>Next</span>
                         <i class="ri-arrow-right-s-line"></i>
                     </button>
@@ -358,7 +383,7 @@
                             <span>Import CSV</span>
                         </button>
                         <input type="file" id="importFile" accept=".csv,text/csv" style="display: none;"
-                            onchange="handleImport(event)">
+                            onchange="handleImport(event)" aria-label="Select CSV file to import">
                         <button class="toolbar-btn" onclick="createBackup()" aria-label="Create Backup">
                             <i class="ri-save-line"></i>
                             <span>Create Backup</span>
@@ -368,7 +393,7 @@
                             <span>Restore Backup</span>
                         </button>
                         <input type="file" id="restoreFile" accept=".csv,text/csv" style="display: none;"
-                            onchange="handleRestore(event)">
+                            onchange="handleRestore(event)" aria-label="Select backup file to restore">
                         <button class="toolbar-btn" onclick="checkForUpdates()" aria-label="Check for updates"
                             id="updateCheckBtn">
                             <i class="ri-refresh-line"></i>
@@ -416,7 +441,7 @@
 
     <script>
         // App Version - Update this when releasing new features
-        const APP_VERSION = '3.6.0';
+        const APP_VERSION = '3.7.0';
         const VERSION_KEY = 'app_version';
 
         // IndexedDB Configuration
@@ -431,6 +456,7 @@
         let currentGrouping = 'month';
         let selectedMonth = 'all';
         let selectedCategory = 'all';
+        let selectedType = 'all'; // 'all', 'income', 'expense'
         let editingId = null;
         let deleteId = null;
         let updateAvailable = false;
@@ -888,29 +914,61 @@
 
             const net = income - expense;
 
+            // Get previous month data for trends
+            const previousMonth = getPreviousMonth(currentMonth);
+            const prevTotals = getMonthTotals(previousMonth);
+
+            // Calculate trends
+            const netDelta = calculateMoMDelta(net, prevTotals.net);
+            const incomeDelta = calculateMoMDelta(income, prevTotals.income);
+            const expensePercent = calculateExpensePercentage(expense, income);
+
             // Update full summary cards
             document.getElementById('monthNet').textContent = formatCurrency(net);
             document.getElementById('monthNet').className = 'summary-value';
 
-            // Update parent card color class
-            const monthCard = document.getElementById('monthNet').closest('.summary-card');
-            monthCard.classList.remove('positive', 'negative');
-            if (net >= 0) {
-                monthCard.classList.add('positive');
-            } else {
-                monthCard.classList.add('negative');
-            }
+            // This Month card should always be neutral (blue), not colored
+            // Only the trend indicator should be colored
 
-            document.getElementById('totalEntries').textContent = transactions.length;
+            document.getElementById('totalEntries').textContent = monthTxs.length;
             document.getElementById('monthIncome').textContent = formatCurrency(income);
             document.getElementById('monthExpense').textContent = formatCurrency(expense);
+
+            // Update This Month trend
+            const monthNetTrend = document.getElementById('monthNetTrend');
+            if (netDelta && netDelta.pct !== null) {
+                const arrow = netDelta.direction === 'up' ? '↑' : netDelta.direction === 'down' ? '↓' : '→';
+                const sign = netDelta.abs >= 0 ? '+' : '';
+                monthNetTrend.innerHTML = `<i class="ri-arrow-${netDelta.direction === 'up' ? 'up' : netDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(netDelta.pct).toFixed(1)}% vs last month`;
+                monthNetTrend.className = `summary-trend ${netDelta.direction === 'up' ? 'positive' : netDelta.direction === 'down' ? 'negative' : 'neutral'}`;
+            } else {
+                monthNetTrend.textContent = '';
+            }
+
+            // Update Income trend (optional)
+            const monthIncomeTrend = document.getElementById('monthIncomeTrend');
+            if (incomeDelta && incomeDelta.pct !== null) {
+                const sign = incomeDelta.abs >= 0 ? '+' : '';
+                monthIncomeTrend.innerHTML = `<i class="ri-arrow-${incomeDelta.direction === 'up' ? 'up' : incomeDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(incomeDelta.pct).toFixed(1)}% vs last month`;
+                monthIncomeTrend.className = `summary-trend ${incomeDelta.direction === 'up' ? 'positive' : incomeDelta.direction === 'down' ? 'negative' : 'neutral'}`;
+            } else {
+                monthIncomeTrend.textContent = '';
+            }
+
+            // Update Expenses meta (% of income)
+            const monthExpenseMeta = document.getElementById('monthExpenseMeta');
+            if (expensePercent !== null) {
+                monthExpenseMeta.textContent = `${expensePercent.toFixed(1)}% of income`;
+            } else {
+                monthExpenseMeta.textContent = '';
+            }
 
             // Update compact summary view
             const compactNetElem = document.getElementById('compactNet');
             compactNetElem.textContent = formatCurrency(net);
             compactNetElem.className = 'compact-stat ' + (net >= 0 ? 'compact-income' : 'compact-expense');
 
-            document.getElementById('compactEntries').textContent = transactions.length;
+            document.getElementById('compactEntries').textContent = monthTxs.length;
             document.getElementById('compactIncome').textContent = formatCurrency(income);
             document.getElementById('compactExpense').textContent = formatCurrency(expense);
         }
@@ -927,6 +985,10 @@
 
             if (selectedCategory !== 'all') {
                 filtered = filtered.filter(t => t.category === selectedCategory);
+            }
+
+            if (selectedType !== 'all') {
+                filtered = filtered.filter(t => t.type === selectedType);
             }
 
             if (filtered.length === 0) {
@@ -967,8 +1029,8 @@
                             ${sign}${formatCurrency(t.amount)}
                         </div>
                         <div class="transaction-actions">
-                            <button class="action-btn edit-btn" onclick="editTransaction(${t.id})"><i class="ri-edit-line"></i></button>
-                            <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})"><i class="ri-delete-bin-line"></i></button>
+                            <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" aria-label="Edit transaction"><i class="ri-edit-line"></i></button>
+                            <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" aria-label="Delete transaction"><i class="ri-delete-bin-line"></i></button>
                         </div>
                     </div>
                 `;
@@ -1110,18 +1172,18 @@
                             ${formatMonth(month)}
                             <span class="group-total">${data.count} entries</span>
                         </div>
-                        <div style="padding: 12px 16px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span style="color: #6e6e73;">Income</span>
+                        <div class="group-content">
+                            <div class="group-row">
+                                <span class="group-label">Income</span>
                                 <span class="positive">${formatCurrency(data.income)}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span style="color: #6e6e73;">Expenses</span>
+                            <div class="group-row">
+                                <span class="group-label">Expenses</span>
                                 <span class="negative">${formatCurrency(data.expense)}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #f5f5f7;">
-                                <span style="font-weight: 600;">Net</span>
-                                <span class="${netClass}" style="font-weight: 600;">${formatCurrency(net)}</span>
+                            <div class="group-row with-border">
+                                <span class="group-label strong">Net</span>
+                                <span class="${netClass} group-value">${formatCurrency(net)}</span>
                             </div>
                         </div>
                     </div>
@@ -1155,10 +1217,10 @@
                             ${category}
                             <span class="group-total">${data.count} entries</span>
                         </div>
-                        <div style="padding: 12px 16px;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #6e6e73;">Total</span>
-                                <span class="${colorClass}" style="font-weight: 600; font-size: 20px;">
+                        <div class="group-content">
+                            <div class="group-row">
+                                <span class="group-label">Total</span>
+                                <span class="${colorClass} group-value large">
                                     ${formatCurrency(data.total)}
                                 </span>
                             </div>
@@ -1226,6 +1288,113 @@
             if (isCollapsed) {
                 document.querySelector('.summary-section').classList.add('collapsed');
             }
+        }
+
+        // Get previous calendar month string
+        function getPreviousMonth(currentMonth) {
+            const [year, month] = currentMonth.split('-').map(Number);
+            const date = new Date(year, month - 1, 1); // Current month's first day
+            date.setMonth(date.getMonth() - 1); // Go back one month
+            return date.toISOString().slice(0, 7);
+        }
+
+        // Get month totals for trend calculation
+        function getMonthTotals(month) {
+            const filtered = transactions.filter(t => t.date.startsWith(month));
+            const income = filtered.filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const expense = filtered.filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            return {
+                income,
+                expense,
+                net: income - expense,
+                count: filtered.length
+            };
+        }
+
+        // Calculate month-over-month change
+        function calculateMoMDelta(currentMonth, previousMonth) {
+            // Edge case: No previous month data
+            if (previousMonth === undefined || previousMonth === null) {
+                return null; // Show "—" in UI
+            }
+
+            // Edge case: Previous month is 0
+            if (previousMonth === 0) {
+                if (currentMonth === 0) {
+                    return { abs: 0, pct: 0, direction: 'neutral' };
+                }
+                return {
+                    abs: currentMonth,
+                    pct: null,
+                    direction: currentMonth > 0 ? 'up' : 'down'
+                };
+            }
+
+            const delta_abs = currentMonth - previousMonth;
+            const delta_pct = (delta_abs / Math.abs(previousMonth)) * 100;
+
+            return {
+                abs: delta_abs,
+                pct: delta_pct,
+                direction: delta_abs > 0 ? 'up' : delta_abs < 0 ? 'down' : 'neutral'
+            };
+        }
+
+        // Calculate expenses as percentage of income
+        function calculateExpensePercentage(expenses, income) {
+            if (income === 0 || income === undefined) {
+                return null; // Show "—" in UI
+            }
+            return (expenses / income) * 100;
+        }
+
+        // Handle summary tile clicks - navigate to filtered list view
+        function onSummaryTileClick(tileType) {
+            // Haptic feedback (mobile)
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+
+            const currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+
+            // Switch to List tab
+            switchTab('list');
+
+            // Apply filters based on tile type
+            switch (tileType) {
+                case 'this-month':
+                    selectedMonth = currentMonth;
+                    selectedCategory = 'all';
+                    selectedType = 'all';
+                    break;
+
+                case 'total-entries':
+                    selectedMonth = currentMonth;
+                    selectedCategory = 'all';
+                    selectedType = 'all';
+                    break;
+
+                case 'income':
+                    selectedMonth = currentMonth;
+                    selectedCategory = 'all';
+                    selectedType = 'income';
+                    break;
+
+                case 'expenses':
+                    selectedMonth = currentMonth;
+                    selectedCategory = 'all';
+                    selectedType = 'expense';
+                    break;
+            }
+
+            // Reset pagination
+            currentPage = 1;
+
+            // Update UI
+            updateUI();
         }
 
         // Change grouping
