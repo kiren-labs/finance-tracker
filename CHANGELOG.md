@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 📱 **iOS Optimizations**: Professional mobile experience
-  - Disabled zoom for app-like experience (no accidental zoom)
+  - Zoom enabled for accessibility (users with low vision can zoom)
+  - Font sizes 16px+ prevent iOS auto-zoom on input focus
   - Increased touch targets to 48px+ (iOS standard)
   - Safe area support for iPhone notch and home indicator
   - Larger fonts on mobile (14-16px minimum)
@@ -54,8 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Better vertical alignment
 
 ### Technical
-- Viewport meta updated: `maximum-scale=1.0, user-scalable=no`
-- Added `env(safe-area-inset-bottom)` to bottom nav
+- Viewport meta allows zoom for accessibility compliance
 - Mobile token scale increased for better readability
 - All CSS tokens cleanup completed (95%+ coverage)
 
@@ -176,10 +176,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All hardcoded CSS values replaced with design tokens
 - Added `--color-install` token for install prompt
 - Mobile font scale increased: 13px → 14px, 15px → 16px
-- Bottom nav uses `env(safe-area-inset-bottom)` for iOS safe areas
-- Viewport meta updated: `maximum-scale=1.0, user-scalable=no`
+- Viewport meta allows user zoom for accessibility
 - Minimum touch targets: 48px for iOS compliance
 - Token coverage: 95%+ (only layout-specific values remain hardcoded)
+- Summary values now use `--color-success-strong` (#1e8e3e) and `--color-danger-strong` (#d93025)
+- Icons still use lighter colors, text uses darker colors for contrast
+- Skip link positioned absolutely with focus transition
+- All color combinations tested for 4.5:1 contrast ratio
 
 ---
 
