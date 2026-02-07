@@ -26,6 +26,9 @@
 </head>
 
 <body>
+    <!-- Skip to Main Content Link (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Success Message -->
     <div class="success-message" id="successMessage">Transaction saved!</div>
 
@@ -257,7 +260,7 @@
 
             <!-- Add Transaction Tab -->
             <div id="addTab" class="tab-content active" role="tabpanel" aria-labelledby="add-tab">
-                <div class="card">
+                <div class="card" id="main-content">
                     <h2 id="formTitle" style="font-size: 20px; margin-bottom: 16px;">Add Transaction</h2>
                     <form id="transactionForm" aria-label="Add transaction form">
                         <div class="form-group">
@@ -302,7 +305,7 @@
 
                         <button type="submit" class="primary" id="submitBtn">Save Transaction</button>
                         <button type="button" class="primary" id="cancelEditBtn" onclick="cancelEdit()"
-                            style="background: #6e6e73; margin-top: 12px; display: none;">Cancel</button>
+                            style="background: #6e6e73; margin-top: 12px; display: none;" aria-label="Cancel editing">Cancel</button>
                     </form>
                 </div>
             </div>
@@ -323,12 +326,12 @@
                     <div id="transactionsList"></div>
                 </div>
                 <div id="paginationControls" class="pagination-container" style="display: none;">
-                    <button onclick="prevPage()" id="prevBtn" class="pagination-btn pagination-btn-prev">
+                    <button onclick="prevPage()" id="prevBtn" class="pagination-btn pagination-btn-prev" aria-label="Previous page">
                         <i class="ri-arrow-left-s-line"></i>
                         <span>Previous</span>
                     </button>
                     <div id="pageInfo" class="pagination-info"></div>
-                    <button onclick="nextPage()" id="nextBtn" class="pagination-btn pagination-btn-next">
+                    <button onclick="nextPage()" id="nextBtn" class="pagination-btn pagination-btn-next" aria-label="Next page">
                         <span>Next</span>
                         <i class="ri-arrow-right-s-line"></i>
                     </button>
@@ -358,7 +361,7 @@
                             <span>Import CSV</span>
                         </button>
                         <input type="file" id="importFile" accept=".csv,text/csv" style="display: none;"
-                            onchange="handleImport(event)">
+                            onchange="handleImport(event)" aria-label="Select CSV file to import">
                         <button class="toolbar-btn" onclick="createBackup()" aria-label="Create Backup">
                             <i class="ri-save-line"></i>
                             <span>Create Backup</span>
@@ -368,7 +371,7 @@
                             <span>Restore Backup</span>
                         </button>
                         <input type="file" id="restoreFile" accept=".csv,text/csv" style="display: none;"
-                            onchange="handleRestore(event)">
+                            onchange="handleRestore(event)" aria-label="Select backup file to restore">
                         <button class="toolbar-btn" onclick="checkForUpdates()" aria-label="Check for updates"
                             id="updateCheckBtn">
                             <i class="ri-refresh-line"></i>
@@ -967,8 +970,8 @@
                             ${sign}${formatCurrency(t.amount)}
                         </div>
                         <div class="transaction-actions">
-                            <button class="action-btn edit-btn" onclick="editTransaction(${t.id})"><i class="ri-edit-line"></i></button>
-                            <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})"><i class="ri-delete-bin-line"></i></button>
+                            <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" aria-label="Edit transaction"><i class="ri-edit-line"></i></button>
+                            <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" aria-label="Delete transaction"><i class="ri-delete-bin-line"></i></button>
                         </div>
                     </div>
                 `;
