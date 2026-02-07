@@ -1,6 +1,6 @@
 /* FinChronicle - Dark Mode Styles */
 /* Version: 3.6.0 */
-
+/* # */
 /* Dark mode token overrides */
 body.dark-mode {
     --color-bg: #000000;
@@ -9,7 +9,9 @@ body.dark-mode {
     --color-text-muted: #aeaeb2;
     --color-text-subtle: #8e8e93;
     --color-border: #38383a;
-    --color-primary-hover: #0061f5;
+    --color-primary: #0053AD;
+    --color-primary-hover: #409CFF;
+    --color-primary-strong: #409CFF;
     --color-disabled-bg: #2c2c2e;
     --color-disabled-text: #8e8e93;
     --color-status: #30d158;
@@ -110,7 +112,8 @@ body.dark-mode .filter-btn {
 }
 
 body.dark-mode .tab.active,
-body.dark-mode .nav-item.active {
+body.dark-mode .nav-item.active,
+body.dark-mode .filter-btn.active {
     color: var(--color-on-primary);
 }
 

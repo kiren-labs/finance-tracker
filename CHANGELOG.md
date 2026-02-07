@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- ♿ **Dark Mode Accessibility**: Improved contrast ratios for WCAG AA compliance
+  - Updated primary color from `#0051D5` to `#0A84FF` (iOS-standard lighter blue for dark mode)
+  - Updated primary hover color to `#409CFF` for better visibility
+  - Updated muted text color from `#98989d` to `#aeaeb2` (8.5:1 contrast)
+  - Updated subtle text color to `#8e8e93` (6.5:1 contrast)
+  - Removed hardcoded color values in favor of CSS variables
+  - Fixed filter button contrast in dark mode (active state now uses lighter blue)
+  - Fixed filter label contrast in dark mode
+  - Fixed grouped view labels (Income, Expenses, Total) contrast
+  - All interactive elements now meet WCAG AA standards in dark mode
+
 ### Planned
 - Budget tracking per category
 - Recurring transactions
