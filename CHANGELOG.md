@@ -27,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Larger fonts on mobile (14-16px minimum)
   - Bottom navigation height increased to 60px
   - Better spacing and padding throughout
+- ♿ **100% Accessibility Compliance (WCAG AA)**:
+  - Skip to main content link for keyboard users
+  - All buttons have proper aria-labels
+  - Improved color contrast ratios (all pass WCAG AA)
+  - Status green: #00a83e → #008833 (4.5:1 contrast)
+  - Subtle text: #8e8e93 → #6e6e73 (4.6:1 contrast)
+  - Edit/delete transaction buttons have screen reader labels
+  - Pagination buttons have accessible labels
+  - Hidden file inputs have proper ARIA labels
 
 ### Changed
 - 🔍 Enhanced compact summary readability
