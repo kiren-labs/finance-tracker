@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.9.1] - 2026-02-08
+
+### Fixed
+- Dark mode contrast for backup status, backup header, and FAQ headers/icons
+- Backup status now refreshes immediately after CSV export
+
 ## [3.9.0] - 2026-02-08
 
 ### Added
