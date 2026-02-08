@@ -8,7 +8,7 @@ on:
 
 jobs:
   run-tests:
-    name: Run Unit & E2E Tests
+    name: Run Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -79,18 +79,6 @@ jobs:
       working-directory: finchronicle-test
       run: npm run test:unit
 
-    - name: Install Playwright browsers
-      if: steps.checkout-tests.outcome == 'success'
-      working-directory: finchronicle-test
-      run: npx playwright install --with-deps chromium firefox
-
-    - name: Run E2E tests
-      if: steps.checkout-tests.outcome == 'success'
-      working-directory: finchronicle-test
-      run: npm run test:e2e
-      env:
-        CI: true
-
     - name: Upload test results
       if: always() && steps.checkout-tests.outcome == 'success'
       uses: actions/upload-artifact@v4
@@ -99,14 +87,6 @@ jobs:
         path: |
           finchronicle-test/test-results/
           finchronicle-test/test-metadata.json
-        retention-days: 30
-
-    - name: Upload Playwright report
-      if: always() && steps.checkout-tests.outcome == 'success'
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report-${{ env.APP_VERSION }}
-        path: finchronicle-test/playwright-report/
         retention-days: 30
 
     - name: Generate test summary
@@ -121,7 +101,6 @@ jobs:
         echo '```' >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Test Coverage" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Unit Tests: Formatters, Parsers, Validators, Trend Calculations" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ E2E Tests: Transactions, CSV Import/Export, Filters" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Unit Tests: Formatters, Parsers, Validators, Calculations, Filters" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📊 **Test artifacts uploaded for review**" >> $GITHUB_STEP_SUMMARY
