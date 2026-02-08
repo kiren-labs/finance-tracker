@@ -1,0 +1,127 @@
+name: Test with Test Repository
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, dev/**, feature/** ]
+
+jobs:
+  run-tests:
+    name: Run Unit & E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout main app
+      uses: actions/checkout@v4
+      with:
+        path: finance-tracker
+
+    - name: Checkout test repository
+      uses: actions/checkout@v4
+      continue-on-error: true
+      id: checkout-tests
+      with:
+        repository: kiren-labs/finchronicle-test
+        path: finchronicle-test
+        # Optional: Use a specific branch or tag
+        # ref: main
+
+    - name: Notify if test repository unavailable
+      if: steps.checkout-tests.outcome != 'success'
+      run: |
+        echo "⚠️ Test repository (kiren-labs/finchronicle-test) is not available"
+        echo "Skipping all tests. This is expected if:"
+        echo "  - The repository is private and no access token is provided"
+        echo "  - The repository does not exist yet"
+        echo "  - There are network connectivity issues"
+        echo ""
+        echo "The main FinChronicle app is not affected by this."
+
+    - name: Setup Node.js
+      if: steps.checkout-tests.outcome == 'success'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: finchronicle-test/package-lock.json
+
+    - name: Install test dependencies
+      if: steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: npm ci
+
+    - name: Extract functions and check version
+      if: steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: |
+        npm run extract
+        echo "📦 Version being tested:"
+        cat test-metadata.json
+
+        # Extract version for GitHub summary
+        APP_VERSION=$(node -p "require('./test-metadata.json').appVersion")
+        echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+
+        # Check if extraction was successful
+        EXTRACTED=$(node -p "require('./test-metadata.json').extractedFunctions")
+        TOTAL=$(node -p "require('./test-metadata.json').totalFunctions")
+
+        if [ "$EXTRACTED" != "$TOTAL" ]; then
+          echo "❌ Function extraction incomplete: $EXTRACTED/$TOTAL"
+          exit 1
+        fi
+
+        echo "✅ Extracted $EXTRACTED/$TOTAL functions successfully"
+
+    - name: Run unit tests
+      if: steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: npm run test:unit
+
+    - name: Install Playwright browsers
+      if: steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: npx playwright install --with-deps chromium firefox
+
+    - name: Run E2E tests
+      if: steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: npm run test:e2e
+      env:
+        CI: true
+
+    - name: Upload test results
+      if: always() && steps.checkout-tests.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ env.APP_VERSION }}
+        path: |
+          finchronicle-test/test-results/
+          finchronicle-test/test-metadata.json
+        retention-days: 30
+
+    - name: Upload Playwright report
+      if: always() && steps.checkout-tests.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report-${{ env.APP_VERSION }}
+        path: finchronicle-test/playwright-report/
+        retention-days: 30
+
+    - name: Generate test summary
+      if: always() && steps.checkout-tests.outcome == 'success'
+      working-directory: finchronicle-test
+      run: |
+        echo "## 🧪 Test Results for v$APP_VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Version Information" >> $GITHUB_STEP_SUMMARY
+        echo '```json' >> $GITHUB_STEP_SUMMARY
+        cat test-metadata.json >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Coverage" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Unit Tests: Formatters, Parsers, Validators, Trend Calculations" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ E2E Tests: Transactions, CSV Import/Export, Filters" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📊 **Test artifacts uploaded for review**" >> $GITHUB_STEP_SUMMARY

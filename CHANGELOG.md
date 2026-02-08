@@ -17,6 +17,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.8.0] - 2026-02-07
+
+### Added
+- **Monthly Insights Panel** - Enhanced Groups tab with comprehensive monthly overview
+  - Monthly summary cards showing income, expenses, savings, and transaction count
+  - Month-over-month trend indicators for all metrics
+  - **Month selector dropdown** - Switch between months directly in the insights section
+  - Defaults to current month, with easy access to all historical months
+- **Top Spending Categories** - Visual breakdown of top 5 expense categories
+  - Shows category name, transaction count, total amount, and percentage of expenses
+  - Sorted by spending amount (highest first)
+  - Helps identify budget-consuming categories at a glance
+
+### Improved
+- Groups tab now provides actionable insights above existing month/category grouping
+- Better visibility into spending patterns without complex accounting
+- Month selector allows quick navigation between different months' insights
+- Consistent design language with existing summary cards
+- Fully responsive on mobile devices (dropdown goes full-width on small screens)
+
+### Technical
+- New functions: `getMonthInsights()`, `getTopSpendingCategories()`, `renderMonthlyInsights()`
+- Updated `updateGroupedView()` to include insights section
+- Added CSS styles for insights cards and category rows
+- Dark mode support for all new UI components
+
+---
+
 ## [3.7.1] - 2026-02-07
 
 ### Changed
