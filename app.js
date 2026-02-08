@@ -364,6 +364,50 @@ document.getElementById('transactionForm').addEventListener('submit', async func
     const formCard = document.querySelector('#addTab .card');
     const originalBtnText = submitBtn.textContent;
 
+    // Validate amount input (v3.9.0 - Critical fix)
+    const amountInput = document.getElementById('amount').value.trim();
+    const amount = parseFloat(amountInput);
+
+    // Check if amount is empty
+    if (!amountInput) {
+        showMessage('⚠️ Please enter an amount');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Check if amount is a valid number
+    if (isNaN(amount)) {
+        showMessage('⚠️ Please enter a valid number');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Check if amount is positive
+    if (amount <= 0) {
+        showMessage('⚠️ Amount must be greater than zero');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Check if amount is not too large (max: 10 million)
+    if (amount > 10000000) {
+        showMessage('⚠️ Amount is too large (max: 10,000,000)');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Check if amount has too many decimals (max: 2 decimal places)
+    if (!Number.isInteger(amount * 100)) {
+        showMessage('⚠️ Amount can have at most 2 decimal places');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
     // Show loading state
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
@@ -372,7 +416,7 @@ document.getElementById('transactionForm').addEventListener('submit', async func
     const transaction = {
         id: editingId || Date.now(),
         type: document.getElementById('type').value,
-        amount: parseFloat(document.getElementById('amount').value),
+        amount: amount, // Use validated amount
         category: document.getElementById('category').value,
         date: document.getElementById('date').value,
         notes: document.getElementById('notes').value,

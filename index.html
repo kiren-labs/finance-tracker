@@ -143,7 +143,7 @@
         <!-- Header -->
         <header>
             <div class="header-content">
-                <h1><i class="ri-wallet-3-line"></i> FinChronicle</h1>
+                <h1><i class="ri-wallet-3-line"></i> <span class="title-text"><span class="fin-text">Fin</span><span class="chronicle-text">Chronicle</span></span></h1>
                 <div class="header-meta">
                     <span class="status-inline"><span class="status-dot"></span> Offline</span>
                     <span class="version" id="appVersion">v3.7.1</span>
@@ -304,7 +304,7 @@
 
                         <div class="form-group">
                             <label for="amount">Amount (₹)</label>
-                            <input type="number" id="amount" placeholder="1000" required min="0" step="0.01" inputmode="decimal">
+                            <input type="number" id="amount" placeholder="1000" required min="0.01" max="10000000" step="0.01" inputmode="decimal" aria-label="Transaction amount in selected currency">
                         </div>
 
                         <div class="form-group">

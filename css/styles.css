@@ -318,6 +318,15 @@ h1 i {
     color: var(--color-primary);
 }
 
+/* Header Title Split Colors */
+.fin-text {
+    color: var(--color-fin);
+}
+
+.chronicle-text {
+    color: var(--color-chronicle);
+}
+
 .header-btn {
     width: var(--icon-button-sm);
     height: var(--icon-button-sm);
