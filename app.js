@@ -1,5 +1,5 @@
 // App Version - Update this when releasing new features
-const APP_VERSION = '3.7.1';
+const APP_VERSION = '3.8.0';
 const VERSION_KEY = 'app_version';
 
 // IndexedDB Configuration
@@ -15,6 +15,7 @@ let currentGrouping = 'month';
 let selectedMonth = 'all';
 let selectedCategory = 'all';
 let selectedType = 'all'; // 'all', 'income', 'expense'
+let insightsMonth = 'current'; // Month selected for insights section ('current' = current month)
 let editingId = null;
 let deleteId = null;
 let updateAvailable = false;
@@ -693,10 +694,28 @@ function updateGroupedView() {
         return;
     }
 
+    // Add insights at the top
+    let html = renderMonthlyInsights();
+
+    // Separator between insights and grouping
+    html += '<div class="insights-separator"></div>';
+
+    // Existing grouping logic
     if (currentGrouping === 'month') {
-        content.innerHTML = groupByMonth();
+        html += groupByMonth();
     } else {
-        content.innerHTML = groupByCategory();
+        html += groupByCategory();
+    }
+
+    content.innerHTML = html;
+
+    // Add event listener for insights month selector
+    const monthSelector = document.getElementById('insightsMonthSelector');
+    if (monthSelector) {
+        monthSelector.addEventListener('change', function(e) {
+            insightsMonth = e.target.value;
+            updateGroupedView(); // Re-render with new month
+        });
     }
 }
 
@@ -907,6 +926,204 @@ function calculateExpensePercentage(expenses, income) {
         return null; // Show "—" in UI
     }
     return (expenses / income) * 100;
+}
+
+// Get insights for a specific month (or current month if 'all')
+function getMonthInsights(month) {
+    // Determine target month
+    const targetMonth = month === 'all' ? new Date().toISOString().slice(0, 7) : month;
+
+    // Get current month totals
+    const current = getMonthTotals(targetMonth);
+
+    // Get previous month totals for comparison
+    const previousMonth = getPreviousMonth(targetMonth);
+    const previous = getMonthTotals(previousMonth);
+
+    // Calculate trends
+    const incomeDelta = calculateMoMDelta(current.income, previous.income);
+    const expenseDelta = calculateMoMDelta(current.expense, previous.expense);
+    const netDelta = calculateMoMDelta(current.net, previous.net);
+
+    return {
+        month: targetMonth,
+        monthName: formatMonth(targetMonth),
+        income: current.income,
+        expense: current.expense,
+        savings: current.net,
+        transactionCount: current.count,
+        trends: {
+            income: incomeDelta,
+            expense: expenseDelta,
+            savings: netDelta
+        }
+    };
+}
+
+// Get top N spending categories for a specific month
+function getTopSpendingCategories(month, limit = 5) {
+    // Determine target month
+    const targetMonth = month === 'all' ? new Date().toISOString().slice(0, 7) : month;
+
+    // Filter expense transactions for the target month
+    const expenseTxs = transactions.filter(t =>
+        t.type === 'expense' &&
+        t.date.startsWith(targetMonth)
+    );
+
+    if (expenseTxs.length === 0) {
+        return [];
+    }
+
+    // Group by category and sum amounts
+    const categoryTotals = {};
+    expenseTxs.forEach(t => {
+        if (!categoryTotals[t.category]) {
+            categoryTotals[t.category] = { total: 0, count: 0 };
+        }
+        categoryTotals[t.category].total += t.amount;
+        categoryTotals[t.category].count++;
+    });
+
+    // Calculate total expenses for percentage
+    const totalExpenses = expenseTxs.reduce((sum, t) => sum + t.amount, 0);
+
+    // Convert to array and sort by total descending
+    const categories = Object.keys(categoryTotals)
+        .map(category => ({
+            category,
+            total: categoryTotals[category].total,
+            count: categoryTotals[category].count,
+            percentage: (categoryTotals[category].total / totalExpenses) * 100
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, limit);
+
+    return categories;
+}
+
+// Get available months from transactions
+function getAvailableMonths() {
+    if (transactions.length === 0) {
+        return [];
+    }
+
+    const months = new Set();
+    transactions.forEach(t => {
+        months.add(t.date.slice(0, 7));
+    });
+
+    return Array.from(months).sort().reverse(); // Newest first
+}
+
+// Render monthly insights HTML
+function renderMonthlyInsights() {
+    // Determine which month to show
+    const targetMonth = insightsMonth === 'current' ? new Date().toISOString().slice(0, 7) : insightsMonth;
+    const insights = getMonthInsights(targetMonth);
+    const topCategories = getTopSpendingCategories(targetMonth);
+
+    // Get available months for dropdown
+    const availableMonths = getAvailableMonths();
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    // Build month selector dropdown
+    let monthOptions = `<option value="current" ${insightsMonth === 'current' ? 'selected' : ''}>Current Month (${formatMonth(currentMonth)})</option>`;
+    availableMonths.forEach(month => {
+        monthOptions += `<option value="${month}" ${insightsMonth === month ? 'selected' : ''}>${formatMonth(month)}</option>`;
+    });
+
+    // Build trends HTML helper
+    const renderTrend = (delta) => {
+        if (!delta || delta.pct === null) return '';
+        const arrow = delta.direction === 'up' ? 'up' : delta.direction === 'down' ? 'down' : 'right';
+        const sign = delta.abs >= 0 ? '+' : '';
+        const colorClass = delta.direction === 'up' ? 'positive' : delta.direction === 'down' ? 'negative' : 'neutral';
+        return `<span class="insight-trend ${colorClass}">
+            <i class="ri-arrow-${arrow}-line"></i> ${sign}${Math.abs(delta.pct).toFixed(1)}%
+        </span>`;
+    };
+
+    // Monthly Summary Box
+    const summaryHTML = `
+        <div class="insights-section">
+            <div class="insights-header">
+                <h3>Monthly Overview</h3>
+                <select id="insightsMonthSelector" class="insights-month-selector">
+                    ${monthOptions}
+                </select>
+            </div>
+
+            <div class="insights-cards">
+                <div class="insight-card income-card">
+                    <div class="insight-icon"><i class="ri-arrow-up-circle-line"></i></div>
+                    <div class="insight-content">
+                        <div class="insight-label">Income</div>
+                        <div class="insight-value">${formatCurrency(insights.income)}</div>
+                        ${renderTrend(insights.trends.income)}
+                    </div>
+                </div>
+
+                <div class="insight-card expense-card">
+                    <div class="insight-icon"><i class="ri-arrow-down-circle-line"></i></div>
+                    <div class="insight-content">
+                        <div class="insight-label">Expenses</div>
+                        <div class="insight-value">${formatCurrency(insights.expense)}</div>
+                        ${renderTrend(insights.trends.expense)}
+                    </div>
+                </div>
+
+                <div class="insight-card savings-card">
+                    <div class="insight-icon"><i class="ri-wallet-3-line"></i></div>
+                    <div class="insight-content">
+                        <div class="insight-label">Savings (Net)</div>
+                        <div class="insight-value ${insights.savings >= 0 ? 'positive' : 'negative'}">
+                            ${formatCurrency(insights.savings)}
+                        </div>
+                        ${renderTrend(insights.trends.savings)}
+                    </div>
+                </div>
+
+                <div class="insight-card count-card">
+                    <div class="insight-icon"><i class="ri-file-list-line"></i></div>
+                    <div class="insight-content">
+                        <div class="insight-label">Transactions</div>
+                        <div class="insight-value">${insights.transactionCount}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Top Spending Categories
+    let categoriesHTML = '';
+    if (topCategories.length > 0) {
+        const categoryRows = topCategories.map(cat => `
+            <div class="category-row">
+                <div class="category-info">
+                    <span class="category-name">${cat.category}</span>
+                    <span class="category-count">${cat.count} transactions</span>
+                </div>
+                <div class="category-amount">
+                    <span class="category-value">${formatCurrency(cat.total)}</span>
+                    <span class="category-percent">${cat.percentage.toFixed(1)}%</span>
+                </div>
+            </div>
+        `).join('');
+
+        categoriesHTML = `
+            <div class="top-categories-section">
+                <div class="section-header">
+                    <h3>Top Spending Categories</h3>
+                </div>
+                <div class="category-list">
+                    ${categoryRows}
+                </div>
+            </div>
+        `;
+    }
+
+    return summaryHTML + categoriesHTML;
 }
 
 // Handle summary tile clicks - navigate to filtered list view
