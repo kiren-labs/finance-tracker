@@ -1,15 +1,17 @@
 // App Version - Update this when releasing new features
-const APP_VERSION = '3.9.1';
+const APP_VERSION = '4.0.0';
 const VERSION_KEY = 'app_version';
 
 // IndexedDB Configuration
 const DB_NAME = 'FinChronicleDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented for account support
 const STORE_NAME = 'transactions';
+const ACCOUNTS_STORE = 'accounts';
 let db = null;
 
 // Initialize
 let transactions = [];
+let accounts = [];
 let currentTab = 'add';
 let currentGrouping = 'month';
 let selectedMonth = 'all';
@@ -18,8 +20,19 @@ let selectedType = 'all'; // 'all', 'income', 'expense'
 let insightsMonth = 'current'; // Month selected for insights section ('current' = current month)
 let editingId = null;
 let deleteId = null;
-let updateAvailable = false;
 let lastBackupTimestamp = null; // Backup tracking (v3.9.0)
+
+// Minimal account types for double-entry accounting
+const accountTypes = {
+    ASSETS: {
+        id: 'assets',
+        name: 'Assets',
+        accounts: [
+            { id: 'cash', name: 'Cash', type: 'asset' },
+            { id: 'bank', name: 'Bank', type: 'asset' }
+        ]
+    }
+};
 
 // Pagination
 let currentPage = 1;
@@ -184,6 +197,50 @@ function updateCategoryOptions(type) {
     }
 }
 
+// Populate account dropdowns
+function populateAccountDropdowns() {
+    const debitSelect = document.getElementById('debitAccount');
+    const creditSelect = document.getElementById('creditAccount');
+
+    const options = accounts.map(acc =>
+        `<option value="${acc.id}">${acc.name}</option>`
+    ).join('');
+
+    debitSelect.innerHTML = '<option value="" disabled selected>Select debit account</option>' + options;
+    creditSelect.innerHTML = '<option value="" disabled selected>Select credit account</option>' + options;
+}
+
+// Calculate account balances from transactions
+function calculateAccountBalances() {
+    // Reset all balances to 0
+    accounts.forEach(account => {
+        account.balance = 0;
+    });
+
+    // Calculate based on transactions
+    transactions.forEach(transaction => {
+        // Skip transactions without account fields (for backward compatibility)
+        if (!transaction.debitAccount || !transaction.creditAccount) {
+            return;
+        }
+
+        const debitAccount = accounts.find(a => a.id === transaction.debitAccount);
+        const creditAccount = accounts.find(a => a.id === transaction.creditAccount);
+
+        if (debitAccount && creditAccount) {
+            const amount = parseFloat(transaction.amount);
+
+            if (transaction.type === 'expense') {
+                // Debit expense category (not tracked in accounts), credit asset
+                creditAccount.balance -= amount;
+            } else if (transaction.type === 'income') {
+                // Debit asset, credit income category (not tracked in accounts)
+                debitAccount.balance += amount;
+            }
+        }
+    });
+}
+
 // =====================================================================
 // IndexedDB Operations
 // =====================================================================
@@ -202,14 +259,82 @@ function initDB() {
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
 
+            // Create transactions store
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
                 store.createIndex('date', 'date', { unique: false });
                 store.createIndex('type', 'type', { unique: false });
                 store.createIndex('category', 'category', { unique: false });
                 store.createIndex('dateType', ['date', 'type'], { unique: false });
+                store.createIndex('debitAccount', 'debitAccount', { unique: false });
+                store.createIndex('creditAccount', 'creditAccount', { unique: false });
+            }
+
+            // Create accounts store for double-entry accounting
+            if (!db.objectStoreNames.contains(ACCOUNTS_STORE)) {
+                const accountsStore = db.createObjectStore(ACCOUNTS_STORE, { keyPath: 'id' });
+                accountsStore.createIndex('type', 'type', { unique: false });
             }
         };
+    });
+}
+
+// Initialize default accounts
+async function initAccounts() {
+    const savedAccounts = await loadAccountsFromDB();
+    if (savedAccounts.length === 0) {
+        // Create default accounts
+        const defaultAccounts = [
+            { id: 'cash', name: 'Cash', type: 'asset', balance: 0 },
+            { id: 'bank', name: 'Bank Account', type: 'asset', balance: 0 },
+            { id: 'credit_card', name: 'Credit Card', type: 'liability', balance: 0 },
+            { id: 'savings', name: 'Savings', type: 'asset', balance: 0 },
+            { id: 'wallet', name: 'Wallet/Digital', type: 'asset', balance: 0 }
+        ];
+
+        for (const account of defaultAccounts) {
+            await saveAccountToDB(account);
+        }
+        accounts = defaultAccounts;
+    } else {
+        accounts = savedAccounts;
+    }
+}
+
+// Load accounts from IndexedDB
+function loadAccountsFromDB() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const transaction = db.transaction([ACCOUNTS_STORE], 'readonly');
+        const store = transaction.objectStore(ACCOUNTS_STORE);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result || []);
+        };
+
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Save account to IndexedDB
+function saveAccountToDB(account) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const tx = db.transaction([ACCOUNTS_STORE], 'readwrite');
+        const store = tx.objectStore(ACCOUNTS_STORE);
+        const request = store.put(account);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
     });
 }
 
@@ -413,11 +538,39 @@ document.getElementById('transactionForm').addEventListener('submit', async func
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="btn-spinner"></span> Saving...';
 
+    // Get account selections
+    const debitAccount = document.getElementById('debitAccount').value;
+    const creditAccount = document.getElementById('creditAccount').value;
+
+    // Validate account selections
+    if (!debitAccount) {
+        showMessage('⚠️ Please select a debit account');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    if (!creditAccount) {
+        showMessage('⚠️ Please select a credit account');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    if (debitAccount === creditAccount) {
+        showMessage('⚠️ Debit and credit accounts must be different');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
     const transaction = {
         id: editingId || Date.now(),
         type: document.getElementById('type').value,
         amount: amount, // Use validated amount
         category: document.getElementById('category').value,
+        debitAccount: debitAccount,
+        creditAccount: creditAccount,
         date: document.getElementById('date').value,
         notes: document.getElementById('notes').value,
         createdAt: editingId ?
@@ -453,6 +606,10 @@ document.getElementById('transactionForm').addEventListener('submit', async func
             transactions.unshift(transaction);
             showMessage('Transaction saved!');
         }
+
+        // Recalculate and display account balances
+        calculateAccountBalances();
+        displayAccounts();
 
         // Wait for animations to complete
         setTimeout(() => {
@@ -1561,6 +1718,14 @@ function editTransaction(id) {
     document.getElementById('date').value = transaction.date;
     document.getElementById('notes').value = transaction.notes;
 
+    // Set debit and credit accounts if they exist in transaction
+    if (transaction.debitAccount) {
+        document.getElementById('debitAccount').value = transaction.debitAccount;
+    }
+    if (transaction.creditAccount) {
+        document.getElementById('creditAccount').value = transaction.creditAccount;
+    }
+
     // Update categories and set selected category
     updateCategoryOptions(transaction.type);
     document.getElementById('category').value = transaction.category;
@@ -1581,6 +1746,7 @@ function cancelEdit() {
 
     // Reset to expense type
     selectType('expense');
+    populateAccountDropdowns();
 
     document.getElementById('formTitle').textContent = 'Add Transaction';
     document.getElementById('submitBtn').textContent = 'Save Transaction';
@@ -1599,6 +1765,8 @@ async function confirmDelete() {
         try {
             await deleteTransactionFromDB(deleteId);
             transactions = transactions.filter(t => t.id !== deleteId);
+            calculateAccountBalances(); // Recalculate balances after delete
+            displayAccounts();
             updateUI();
             showMessage('Transaction deleted!');
         } catch (err) {
@@ -2237,9 +2405,18 @@ function parseCSV(text) {
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
-    const icon = document.getElementById('darkModeIcon');
-    icon.className = isDark ? 'ri-sun-line' : 'ri-moon-line';
+
+    // Update both header and settings icons
+    const headerIcon = document.getElementById('headerDarkModeIcon');
+    const settingsIcon = document.getElementById('darkModeIcon');
+    const iconClass = isDark ? 'ri-sun-line' : 'ri-moon-line';
+
+    if (headerIcon) headerIcon.className = iconClass;
+    if (settingsIcon) settingsIcon.className = iconClass;
+
+    // Update aria-labels
     document.getElementById('darkModeBtn').setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+
     localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
 }
 
@@ -2248,8 +2425,15 @@ function loadDarkMode() {
     const darkMode = localStorage.getItem('darkMode');
     if (darkMode === 'enabled') {
         document.body.classList.add('dark-mode');
-        const icon = document.getElementById('darkModeIcon');
-        icon.className = 'ri-sun-line';
+        const iconClass = 'ri-sun-line';
+
+        // Update both icons
+        const headerIcon = document.getElementById('headerDarkModeIcon');
+        const settingsIcon = document.getElementById('darkModeIcon');
+
+        if (headerIcon) headerIcon.className = iconClass;
+        if (settingsIcon) settingsIcon.className = iconClass;
+
         document.getElementById('darkModeBtn').setAttribute('aria-label', 'Switch to light mode');
     }
 }
@@ -2305,125 +2489,25 @@ function checkAppVersion() {
         localStorage.setItem(VERSION_KEY, APP_VERSION);
         console.log(`✨ FinChronicle ${APP_VERSION} installed!`);
     } else if (storedVersion !== APP_VERSION) {
-        // Version has changed - show update notification
+        // Version has changed
         console.log(`🎉 Updated from ${storedVersion} to ${APP_VERSION}`);
-        showUpdateNotification(storedVersion, APP_VERSION);
         localStorage.setItem(VERSION_KEY, APP_VERSION);
-    } else {
-        // Same version, check if service worker has updates
-        checkServiceWorkerUpdate();
     }
 
     // Update version display in UI
     document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
 }
 
-function showUpdateNotification(oldVersion, newVersion) {
-    const prompt = document.getElementById('updatePrompt');
-    const message = prompt.querySelector('p');
-    message.textContent = `Updated from v${oldVersion} to v${newVersion}! Check out the new features.`;
-    prompt.classList.add('show');
-
-    // Auto-hide after 10 seconds
-    setTimeout(() => {
-        dismissUpdate();
-    }, 10000);
-}
-
-function checkServiceWorkerUpdate() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(registration => {
-            if (registration) {
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // New service worker available
-                            updateAvailable = true;
-                            showUpdatePrompt();
-                        }
-                    });
-                });
-                // Check for updates now
-                registration.update();
-            }
-        });
-    }
-}
-
-function showUpdatePrompt() {
-    const prompt = document.getElementById('updatePrompt');
-    prompt.classList.add('show');
-}
-
-function reloadApp() {
-    // Tell service worker to skip waiting and activate immediately
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.getRegistration().then(reg => {
-            if (reg && reg.waiting) {
-                // Tell the waiting service worker to activate
-                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            } else {
-                // No waiting worker, just reload
-                window.location.reload(true);
-            }
-        });
-    } else {
-        // Force hard reload
-        window.location.reload(true);
-    }
-}
-
-function dismissUpdate() {
-    const prompt = document.getElementById('updatePrompt');
-    prompt.classList.remove('show');
-}
-
-// Manual update check
-function checkForUpdates() {
-    const btn = document.getElementById('updateCheckBtn');
-    const icon = btn.querySelector('i');
-
-    // Show spinning animation
-    icon.style.animation = 'spin 1s linear infinite';
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(registration => {
-            if (registration) {
-                console.log('🔍 Checking for updates...');
-                showMessage('Checking for updates...');
-
-                registration.update().then(() => {
-                    setTimeout(() => {
-                        icon.style.animation = '';
-
-                        // Check if update is available
-                        if (registration.waiting || registration.installing) {
-                            showMessage('Update found! Preparing...');
-                            showUpdatePrompt();
-                        } else {
-                            showMessage('You\'re on the latest version!');
-                        }
-                    }, 1000);
-                });
-            } else {
-                icon.style.animation = '';
-                showMessage('No service worker registered');
-            }
-        });
-    } else {
-        icon.style.animation = '';
-        showMessage('Service Worker not supported');
-    }
-}
-
 // Initialize app
 window.addEventListener('load', async function () {
     try {
         await initDB();
+        await initAccounts(); // Initialize double-entry accounts
         await migrateFromLocalStorage();
         await loadDataFromDB();
+        calculateAccountBalances(); // Calculate balances from transactions
         updateUI();
+        populateAccountDropdowns(); // Populate account selects
         checkAppVersion();
         loadDarkMode();
         loadSummaryState();

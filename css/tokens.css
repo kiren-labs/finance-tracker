@@ -58,20 +58,14 @@
     --color-chip-negative-bg: #fff1f0;
     --color-chip-positive-bg: #eef8f0;
 
-    --color-install: #667eea;
-    --color-install-dark: #764ba2;
-
-    --gradient-primary: linear-gradient(135deg, #0051D5 0%, #0046b8 100%);
-    --gradient-install: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-update: linear-gradient(135deg, #34c759 0%, #30b34d 100%);
     --gradient-income: linear-gradient(180deg, #34c759 0%, #28a745 100%);
     --gradient-expense: linear-gradient(180deg, #ff3b30 0%, #d93025 100%);
 
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.3);
-    --shadow-primary: 0 4px 12px rgba(0,81,213,0.3);
-    --shadow-primary-sm: 0 2px 6px rgba(0,81,213,0.2);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 2px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+    --shadow-primary: 0 2px 6px rgba(0,81,213,0.2);
+    --shadow-primary-sm: 0 1px 3px rgba(0,81,213,0.15);
 
     --radius-sm: 6px;
     --radius-md: 8px;
