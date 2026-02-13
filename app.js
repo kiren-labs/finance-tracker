@@ -22,17 +22,14 @@ let editingId = null;
 let deleteId = null;
 let lastBackupTimestamp = null; // Backup tracking (v3.9.0)
 
-// Account types for double-entry accounting
+// Minimal account types for double-entry accounting
 const accountTypes = {
     ASSETS: {
         id: 'assets',
         name: 'Assets',
         accounts: [
             { id: 'cash', name: 'Cash', type: 'asset' },
-            { id: 'bank', name: 'Bank Account', type: 'asset' },
-            { id: 'credit_card', name: 'Credit Card', type: 'liability' },
-            { id: 'savings', name: 'Savings', type: 'asset' },
-            { id: 'wallet', name: 'Wallet/Digital', type: 'asset' }
+            { id: 'bank', name: 'Bank', type: 'asset' }
         ]
     }
 };
@@ -211,29 +208,6 @@ function populateAccountDropdowns() {
 
     debitSelect.innerHTML = '<option value="" disabled selected>Select debit account</option>' + options;
     creditSelect.innerHTML = '<option value="" disabled selected>Select credit account</option>' + options;
-}
-
-// Display account balances
-function displayAccounts() {
-    const accountsList = document.getElementById('accountsList');
-    if (!accountsList) return;
-
-    accountsList.innerHTML = accounts.map(account => {
-        const balance = account.balance || 0;
-        const isPositive = balance >= 0;
-
-        return `
-            <div class="account-card">
-                <div class="account-card-header">
-                    <span class="account-name">${account.name}</span>
-                    <span class="account-type">${account.type}</span>
-                </div>
-                <div class="account-balance ${isPositive ? 'positive' : 'negative'}">
-                    ${isPositive ? '+' : ''}${formatCurrency(balance)}
-                </div>
-            </div>
-        `;
-    }).join('');
 }
 
 // Calculate account balances from transactions
@@ -684,7 +658,6 @@ function updateUI() {
     updateMonthFilters();
     updateCategoryFilter();
     updateGroupedView();
-    displayAccounts(); // Display account balances
 }
 
 // Update summary cards
