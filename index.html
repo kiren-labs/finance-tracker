@@ -242,6 +242,17 @@
                 </div>
             </div>
             </div>
+
+            <!-- Accounts Section -->
+            <div id="accountsSection">
+                <div class="summary-header">
+                    <h2 class="summary-title">Accounts</h2>
+                </div>
+                <div class="accounts-list" id="accountsList">
+                    <!-- Accounts will be populated dynamically -->
+                </div>
+            </div>
+
             <!-- Currency Selector Modal -->
             <div id="currencyModal" class="modal" style="display: none;">
                 <div class="modal-content">
@@ -298,6 +309,22 @@
                             <select id="category" required>
                                 <option value="" disabled selected>Select category</option>
                                 <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debitAccount">Debit Account</label>
+                            <select id="debitAccount" required>
+                                <option value="" disabled selected>Select debit account</option>
+                                <!-- Will be populated by JS -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="creditAccount">Credit Account</label>
+                            <select id="creditAccount" required>
+                                <option value="" disabled selected>Select credit account</option>
+                                <!-- Will be populated by JS -->
                             </select>
                         </div>
 

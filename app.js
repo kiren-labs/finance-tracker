@@ -1,15 +1,17 @@
 // App Version - Update this when releasing new features
-const APP_VERSION = '3.9.1';
+const APP_VERSION = '4.0.0';
 const VERSION_KEY = 'app_version';
 
 // IndexedDB Configuration
 const DB_NAME = 'FinChronicleDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented for account support
 const STORE_NAME = 'transactions';
+const ACCOUNTS_STORE = 'accounts';
 let db = null;
 
 // Initialize
 let transactions = [];
+let accounts = [];
 let currentTab = 'add';
 let currentGrouping = 'month';
 let selectedMonth = 'all';
@@ -19,6 +21,21 @@ let insightsMonth = 'current'; // Month selected for insights section ('current'
 let editingId = null;
 let deleteId = null;
 let lastBackupTimestamp = null; // Backup tracking (v3.9.0)
+
+// Account types for double-entry accounting
+const accountTypes = {
+    ASSETS: {
+        id: 'assets',
+        name: 'Assets',
+        accounts: [
+            { id: 'cash', name: 'Cash', type: 'asset' },
+            { id: 'bank', name: 'Bank Account', type: 'asset' },
+            { id: 'credit_card', name: 'Credit Card', type: 'liability' },
+            { id: 'savings', name: 'Savings', type: 'asset' },
+            { id: 'wallet', name: 'Wallet/Digital', type: 'asset' }
+        ]
+    }
+};
 
 // Pagination
 let currentPage = 1;
@@ -183,6 +200,73 @@ function updateCategoryOptions(type) {
     }
 }
 
+// Populate account dropdowns
+function populateAccountDropdowns() {
+    const debitSelect = document.getElementById('debitAccount');
+    const creditSelect = document.getElementById('creditAccount');
+
+    const options = accounts.map(acc =>
+        `<option value="${acc.id}">${acc.name}</option>`
+    ).join('');
+
+    debitSelect.innerHTML = '<option value="" disabled selected>Select debit account</option>' + options;
+    creditSelect.innerHTML = '<option value="" disabled selected>Select credit account</option>' + options;
+}
+
+// Display account balances
+function displayAccounts() {
+    const accountsList = document.getElementById('accountsList');
+    if (!accountsList) return;
+
+    accountsList.innerHTML = accounts.map(account => {
+        const balance = account.balance || 0;
+        const isPositive = balance >= 0;
+
+        return `
+            <div class="account-card">
+                <div class="account-card-header">
+                    <span class="account-name">${account.name}</span>
+                    <span class="account-type">${account.type}</span>
+                </div>
+                <div class="account-balance ${isPositive ? 'positive' : 'negative'}">
+                    ${isPositive ? '+' : ''}${formatCurrency(balance)}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Calculate account balances from transactions
+function calculateAccountBalances() {
+    // Reset all balances to 0
+    accounts.forEach(account => {
+        account.balance = 0;
+    });
+
+    // Calculate based on transactions
+    transactions.forEach(transaction => {
+        // Skip transactions without account fields (for backward compatibility)
+        if (!transaction.debitAccount || !transaction.creditAccount) {
+            return;
+        }
+
+        const debitAccount = accounts.find(a => a.id === transaction.debitAccount);
+        const creditAccount = accounts.find(a => a.id === transaction.creditAccount);
+
+        if (debitAccount && creditAccount) {
+            const amount = parseFloat(transaction.amount);
+
+            if (transaction.type === 'expense') {
+                // Debit expense category (not tracked in accounts), credit asset
+                creditAccount.balance -= amount;
+            } else if (transaction.type === 'income') {
+                // Debit asset, credit income category (not tracked in accounts)
+                debitAccount.balance += amount;
+            }
+        }
+    });
+}
+
 // =====================================================================
 // IndexedDB Operations
 // =====================================================================
@@ -201,14 +285,82 @@ function initDB() {
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
 
+            // Create transactions store
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
                 store.createIndex('date', 'date', { unique: false });
                 store.createIndex('type', 'type', { unique: false });
                 store.createIndex('category', 'category', { unique: false });
                 store.createIndex('dateType', ['date', 'type'], { unique: false });
+                store.createIndex('debitAccount', 'debitAccount', { unique: false });
+                store.createIndex('creditAccount', 'creditAccount', { unique: false });
+            }
+
+            // Create accounts store for double-entry accounting
+            if (!db.objectStoreNames.contains(ACCOUNTS_STORE)) {
+                const accountsStore = db.createObjectStore(ACCOUNTS_STORE, { keyPath: 'id' });
+                accountsStore.createIndex('type', 'type', { unique: false });
             }
         };
+    });
+}
+
+// Initialize default accounts
+async function initAccounts() {
+    const savedAccounts = await loadAccountsFromDB();
+    if (savedAccounts.length === 0) {
+        // Create default accounts
+        const defaultAccounts = [
+            { id: 'cash', name: 'Cash', type: 'asset', balance: 0 },
+            { id: 'bank', name: 'Bank Account', type: 'asset', balance: 0 },
+            { id: 'credit_card', name: 'Credit Card', type: 'liability', balance: 0 },
+            { id: 'savings', name: 'Savings', type: 'asset', balance: 0 },
+            { id: 'wallet', name: 'Wallet/Digital', type: 'asset', balance: 0 }
+        ];
+
+        for (const account of defaultAccounts) {
+            await saveAccountToDB(account);
+        }
+        accounts = defaultAccounts;
+    } else {
+        accounts = savedAccounts;
+    }
+}
+
+// Load accounts from IndexedDB
+function loadAccountsFromDB() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const transaction = db.transaction([ACCOUNTS_STORE], 'readonly');
+        const store = transaction.objectStore(ACCOUNTS_STORE);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result || []);
+        };
+
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Save account to IndexedDB
+function saveAccountToDB(account) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not initialized'));
+            return;
+        }
+
+        const tx = db.transaction([ACCOUNTS_STORE], 'readwrite');
+        const store = tx.objectStore(ACCOUNTS_STORE);
+        const request = store.put(account);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
     });
 }
 
@@ -412,11 +564,39 @@ document.getElementById('transactionForm').addEventListener('submit', async func
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="btn-spinner"></span> Saving...';
 
+    // Get account selections
+    const debitAccount = document.getElementById('debitAccount').value;
+    const creditAccount = document.getElementById('creditAccount').value;
+
+    // Validate account selections
+    if (!debitAccount) {
+        showMessage('⚠️ Please select a debit account');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    if (!creditAccount) {
+        showMessage('⚠️ Please select a credit account');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
+    if (debitAccount === creditAccount) {
+        showMessage('⚠️ Debit and credit accounts must be different');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+    }
+
     const transaction = {
         id: editingId || Date.now(),
         type: document.getElementById('type').value,
         amount: amount, // Use validated amount
         category: document.getElementById('category').value,
+        debitAccount: debitAccount,
+        creditAccount: creditAccount,
         date: document.getElementById('date').value,
         notes: document.getElementById('notes').value,
         createdAt: editingId ?
@@ -452,6 +632,10 @@ document.getElementById('transactionForm').addEventListener('submit', async func
             transactions.unshift(transaction);
             showMessage('Transaction saved!');
         }
+
+        // Recalculate and display account balances
+        calculateAccountBalances();
+        displayAccounts();
 
         // Wait for animations to complete
         setTimeout(() => {
@@ -500,6 +684,7 @@ function updateUI() {
     updateMonthFilters();
     updateCategoryFilter();
     updateGroupedView();
+    displayAccounts(); // Display account balances
 }
 
 // Update summary cards
@@ -1560,6 +1745,14 @@ function editTransaction(id) {
     document.getElementById('date').value = transaction.date;
     document.getElementById('notes').value = transaction.notes;
 
+    // Set debit and credit accounts if they exist in transaction
+    if (transaction.debitAccount) {
+        document.getElementById('debitAccount').value = transaction.debitAccount;
+    }
+    if (transaction.creditAccount) {
+        document.getElementById('creditAccount').value = transaction.creditAccount;
+    }
+
     // Update categories and set selected category
     updateCategoryOptions(transaction.type);
     document.getElementById('category').value = transaction.category;
@@ -1580,6 +1773,7 @@ function cancelEdit() {
 
     // Reset to expense type
     selectType('expense');
+    populateAccountDropdowns();
 
     document.getElementById('formTitle').textContent = 'Add Transaction';
     document.getElementById('submitBtn').textContent = 'Save Transaction';
@@ -1598,6 +1792,8 @@ async function confirmDelete() {
         try {
             await deleteTransactionFromDB(deleteId);
             transactions = transactions.filter(t => t.id !== deleteId);
+            calculateAccountBalances(); // Recalculate balances after delete
+            displayAccounts();
             updateUI();
             showMessage('Transaction deleted!');
         } catch (err) {
@@ -2333,9 +2529,12 @@ function checkAppVersion() {
 window.addEventListener('load', async function () {
     try {
         await initDB();
+        await initAccounts(); // Initialize double-entry accounts
         await migrateFromLocalStorage();
         await loadDataFromDB();
+        calculateAccountBalances(); // Calculate balances from transactions
         updateUI();
+        populateAccountDropdowns(); // Populate account selects
         checkAppVersion();
         loadDarkMode();
         loadSummaryState();

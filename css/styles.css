@@ -634,6 +634,84 @@ body.dark-mode .header-btn:hover {
     color: var(--color-danger);
 }
 
+/* ==========================================================================
+   Accounts Section (Double-Entry Accounting)
+   ========================================================================== */
+
+#accountsSection {
+    margin-bottom: var(--space-lg);
+}
+
+.accounts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+}
+
+.account-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.account-card:hover {
+    background: var(--color-bg);
+}
+
+.account-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account-name {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.account-type {
+    font-size: var(--font-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-sm);
+}
+
+.account-balance {
+    font-size: var(--font-3xl);
+    font-weight: 600;
+    font-family: var(--font-family-mono);
+    color: var(--color-text);
+}
+
+.account-balance.positive {
+    color: var(--color-success-strong);
+}
+
+.account-balance.negative {
+    color: var(--color-danger-strong);
+}
+
+/* Mobile responsive accounts */
+@media (max-width: 480px) {
+    .accounts-list {
+        grid-template-columns: 1fr;
+    }
+
+    .account-balance {
+        font-size: var(--font-2xl);
+    }
+}
+
 /* Trend indicators (Phase 2) */
 .summary-trend {
     font-size: var(--font-md);

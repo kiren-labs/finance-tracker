@@ -363,3 +363,36 @@ body.dark-mode .toolbar-btn:active {
 body.dark-mode .filter-label {
     color: var(--color-text-muted);
 }
+
+/* ==========================================================================
+   Accounts - Dark Mode (Double-Entry)
+   ========================================================================== */
+
+body.dark-mode .account-card {
+    background: var(--color-surface);
+}
+
+body.dark-mode .account-card:hover {
+    background: var(--color-bg);
+}
+
+body.dark-mode .account-name {
+    color: var(--color-text);
+}
+
+body.dark-mode .account-type {
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+body.dark-mode .account-balance {
+    color: var(--color-text);
+}
+
+body.dark-mode .account-balance.positive {
+    color: var(--color-success-strong);
+}
+
+body.dark-mode .account-balance.negative {
+    color: var(--color-danger-strong);
+}
