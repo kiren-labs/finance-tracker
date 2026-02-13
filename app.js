@@ -18,7 +18,6 @@ let selectedType = 'all'; // 'all', 'income', 'expense'
 let insightsMonth = 'current'; // Month selected for insights section ('current' = current month)
 let editingId = null;
 let deleteId = null;
-let updateAvailable = false;
 let lastBackupTimestamp = null; // Backup tracking (v3.9.0)
 
 // Pagination
@@ -2237,9 +2236,18 @@ function parseCSV(text) {
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
-    const icon = document.getElementById('darkModeIcon');
-    icon.className = isDark ? 'ri-sun-line' : 'ri-moon-line';
+
+    // Update both header and settings icons
+    const headerIcon = document.getElementById('headerDarkModeIcon');
+    const settingsIcon = document.getElementById('darkModeIcon');
+    const iconClass = isDark ? 'ri-sun-line' : 'ri-moon-line';
+
+    if (headerIcon) headerIcon.className = iconClass;
+    if (settingsIcon) settingsIcon.className = iconClass;
+
+    // Update aria-labels
     document.getElementById('darkModeBtn').setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+
     localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
 }
 
@@ -2248,8 +2256,15 @@ function loadDarkMode() {
     const darkMode = localStorage.getItem('darkMode');
     if (darkMode === 'enabled') {
         document.body.classList.add('dark-mode');
-        const icon = document.getElementById('darkModeIcon');
-        icon.className = 'ri-sun-line';
+        const iconClass = 'ri-sun-line';
+
+        // Update both icons
+        const headerIcon = document.getElementById('headerDarkModeIcon');
+        const settingsIcon = document.getElementById('darkModeIcon');
+
+        if (headerIcon) headerIcon.className = iconClass;
+        if (settingsIcon) settingsIcon.className = iconClass;
+
         document.getElementById('darkModeBtn').setAttribute('aria-label', 'Switch to light mode');
     }
 }
@@ -2305,116 +2320,13 @@ function checkAppVersion() {
         localStorage.setItem(VERSION_KEY, APP_VERSION);
         console.log(`✨ FinChronicle ${APP_VERSION} installed!`);
     } else if (storedVersion !== APP_VERSION) {
-        // Version has changed - show update notification
+        // Version has changed
         console.log(`🎉 Updated from ${storedVersion} to ${APP_VERSION}`);
-        showUpdateNotification(storedVersion, APP_VERSION);
         localStorage.setItem(VERSION_KEY, APP_VERSION);
-    } else {
-        // Same version, check if service worker has updates
-        checkServiceWorkerUpdate();
     }
 
     // Update version display in UI
     document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
-}
-
-function showUpdateNotification(oldVersion, newVersion) {
-    const prompt = document.getElementById('updatePrompt');
-    const message = prompt.querySelector('p');
-    message.textContent = `Updated from v${oldVersion} to v${newVersion}! Check out the new features.`;
-    prompt.classList.add('show');
-
-    // Auto-hide after 10 seconds
-    setTimeout(() => {
-        dismissUpdate();
-    }, 10000);
-}
-
-function checkServiceWorkerUpdate() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(registration => {
-            if (registration) {
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // New service worker available
-                            updateAvailable = true;
-                            showUpdatePrompt();
-                        }
-                    });
-                });
-                // Check for updates now
-                registration.update();
-            }
-        });
-    }
-}
-
-function showUpdatePrompt() {
-    const prompt = document.getElementById('updatePrompt');
-    prompt.classList.add('show');
-}
-
-function reloadApp() {
-    // Tell service worker to skip waiting and activate immediately
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.getRegistration().then(reg => {
-            if (reg && reg.waiting) {
-                // Tell the waiting service worker to activate
-                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            } else {
-                // No waiting worker, just reload
-                window.location.reload(true);
-            }
-        });
-    } else {
-        // Force hard reload
-        window.location.reload(true);
-    }
-}
-
-function dismissUpdate() {
-    const prompt = document.getElementById('updatePrompt');
-    prompt.classList.remove('show');
-}
-
-// Manual update check
-function checkForUpdates() {
-    const btn = document.getElementById('updateCheckBtn');
-    const icon = btn.querySelector('i');
-
-    // Show spinning animation
-    icon.style.animation = 'spin 1s linear infinite';
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(registration => {
-            if (registration) {
-                console.log('🔍 Checking for updates...');
-                showMessage('Checking for updates...');
-
-                registration.update().then(() => {
-                    setTimeout(() => {
-                        icon.style.animation = '';
-
-                        // Check if update is available
-                        if (registration.waiting || registration.installing) {
-                            showMessage('Update found! Preparing...');
-                            showUpdatePrompt();
-                        } else {
-                            showMessage('You\'re on the latest version!');
-                        }
-                    }, 1000);
-                });
-            } else {
-                icon.style.animation = '';
-                showMessage('No service worker registered');
-            }
-        });
-    } else {
-        icon.style.animation = '';
-        showMessage('Service Worker not supported');
-    }
 }
 
 // Initialize app

@@ -150,6 +150,9 @@
                     <button class="header-btn" onclick="quickAddTransaction()" aria-label="Quick Add Transaction" title="Quick Add">
                         <i class="ri-add-line"></i>
                     </button>
+                    <button class="header-btn dark-mode-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode" title="Toggle Dark Mode" style="display: flex !important; opacity: 1 !important;">
+                        <span class="btn-text" style="display: block !important;">🌙</span>
+                    </button>
                 </div>
             </div>
         </header>
@@ -377,11 +380,6 @@
                         </button>
                         <input type="file" id="restoreFile" accept=".csv,text/csv" style="display: none;"
                             onchange="handleRestore(event)" aria-label="Select backup file to restore">
-                        <button class="toolbar-btn" onclick="checkForUpdates()" aria-label="Check for updates"
-                            id="updateCheckBtn">
-                            <i class="ri-refresh-line"></i>
-                            <span>Check Updates</span>
-                        </button>
                         <button class="toolbar-btn" onclick="toggleCurrencySelector()" aria-label="Change currency"
                             id="currencyBtn">
                             <i class="ri-exchange-dollar-line"></i>
