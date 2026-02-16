@@ -1,5 +1,5 @@
 // App Version - Update this when releasing new features
-const APP_VERSION = '3.9.1';
+const APP_VERSION = '3.10.0';
 const VERSION_KEY = 'app_version';
 
 // IndexedDB Configuration
@@ -1372,12 +1372,62 @@ function getAvailableMonths() {
     return Array.from(months).sort().reverse(); // Newest first
 }
 
+// Calculate budget health metrics for a specific month
+function calculateBudgetHealth(month) {
+    const [year, monthNum] = month.split('-').map(Number);
+    const now = new Date();
+    const isCurrentMonth = now.getFullYear() === year && (now.getMonth() + 1) === monthNum;
+
+    // Calculate days in month and current day
+    const daysInMonth = new Date(year, monthNum, 0).getDate();
+    const currentDay = isCurrentMonth ? now.getDate() : daysInMonth;
+    const daysRemaining = daysInMonth - currentDay;
+
+    // Get expense transactions for the month
+    const expenseTxs = transactions.filter(t =>
+        t.type === 'expense' && t.date.startsWith(month)
+    );
+
+    if (expenseTxs.length === 0 || currentDay === 0) {
+        return null;
+    }
+
+    const totalExpense = expenseTxs.reduce((sum, t) => sum + t.amount, 0);
+    const dailyPace = totalExpense / currentDay;
+    const projectedMonthEnd = dailyPace * daysInMonth;
+    const variance = projectedMonthEnd - totalExpense;
+    const variancePercent = (variance / totalExpense) * 100;
+
+    // Determine health status
+    let status, statusIcon;
+    if (variancePercent < 20) {
+        status = 'On Track';
+        statusIcon = 'check-line';
+    } else if (variancePercent < 50) {
+        status = 'Caution';
+        statusIcon = 'alert-line';
+    } else {
+        status = 'Over Pace';
+        statusIcon = 'close-circle-line';
+    }
+
+    return {
+        dailyPace,
+        daysRemaining,
+        projectedMonthEnd,
+        status,
+        statusIcon,
+        variancePercent
+    };
+}
+
 // Render monthly insights HTML
 function renderMonthlyInsights() {
     // Determine which month to show
     const targetMonth = insightsMonth === 'current' ? new Date().toISOString().slice(0, 7) : insightsMonth;
     const insights = getMonthInsights(targetMonth);
     const topCategories = getTopSpendingCategories(targetMonth);
+    const budgetHealth = calculateBudgetHealth(targetMonth);
 
     // Get available months for dropdown
     const availableMonths = getAvailableMonths();
@@ -1452,6 +1502,42 @@ function renderMonthlyInsights() {
         </div>
     `;
 
+    // Budget Health Card
+    let budgetHealthHTML = '';
+    if (budgetHealth && insights.expense > 0) {
+        const statusClass = budgetHealth.status === 'On Track' ? 'on-track' :
+                           budgetHealth.status === 'Caution' ? 'caution' : 'over-pace';
+
+        budgetHealthHTML = `
+            <div class="budget-health-section">
+                <div class="budget-health-header">
+                    <div class="budget-health-title">
+                        <i class="ri-pulse-line"></i>
+                        <h3>Budget Health</h3>
+                    </div>
+                    <div class="budget-health-status ${statusClass}">
+                        <i class="ri-${budgetHealth.statusIcon}"></i>
+                        ${budgetHealth.status}
+                    </div>
+                </div>
+                <div class="budget-health-metrics">
+                    <div class="budget-metric">
+                        <div class="metric-label">Daily Pace</div>
+                        <div class="metric-value">${formatCurrency(budgetHealth.dailyPace)}</div>
+                    </div>
+                    <div class="budget-metric">
+                        <div class="metric-label">Days Left</div>
+                        <div class="metric-value">${budgetHealth.daysRemaining}d</div>
+                    </div>
+                    <div class="budget-metric">
+                        <div class="metric-label">Projected</div>
+                        <div class="metric-value">${formatCurrency(budgetHealth.projectedMonthEnd)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     // Top Spending Categories
     let categoriesHTML = '';
     if (topCategories.length > 0) {
@@ -1480,7 +1566,7 @@ function renderMonthlyInsights() {
         `;
     }
 
-    return summaryHTML + categoriesHTML;
+    return summaryHTML + budgetHealthHTML + categoriesHTML;
 }
 
 // Handle summary tile clicks - navigate to filtered list view

@@ -218,6 +218,7 @@ body.dark-mode .currency-name {
    ========================================================================== */
 
 body.dark-mode .insights-section,
+body.dark-mode .budget-health-section,
 body.dark-mode .top-categories-section {
     background: var(--color-surface);
     border-color: var(--color-border);
@@ -230,13 +231,16 @@ body.dark-mode .category-row {
 }
 
 body.dark-mode .insights-header h3,
+body.dark-mode .budget-health-title h3,
 body.dark-mode .section-header h3,
 body.dark-mode .insight-value,
+body.dark-mode .metric-value,
 body.dark-mode .category-name {
     color: var(--color-text);
 }
 
 body.dark-mode .insight-label,
+body.dark-mode .metric-label,
 body.dark-mode .category-count,
 body.dark-mode .category-percent {
     color: var(--color-text-muted);
