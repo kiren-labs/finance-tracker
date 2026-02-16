@@ -1,5 +1,5 @@
 // App Version - Update this when releasing new features
-const APP_VERSION = '3.10.0';
+const APP_VERSION = '3.10.1';
 const VERSION_KEY = 'app_version';
 
 // IndexedDB Configuration
