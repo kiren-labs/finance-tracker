@@ -17,6 +17,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.10.0] - 2026-02-16
+
+### Added
+- **Budget Health Card** - Real-time spending insights and projections
+  - Daily spending pace tracker showing average daily expenses
+  - Days remaining in current month counter
+  - Projected month-end spending based on current pace
+  - Health status indicator: On Track, Caution, or Over Pace
+  - Color-coded visual indicators (green/yellow/red)
+  - Automatically displays in Monthly Insights section
+  - Smart detection of current vs historical months
+
+### Improved
+- Monthly insights now provide more actionable spending data
+- Better visibility into spending patterns and trends
+- Helps users stay within budget through proactive alerts
+
+---
+
 ## [3.9.1] - 2026-02-08
 
 ### Fixed
