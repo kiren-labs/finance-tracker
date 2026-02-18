@@ -54,8 +54,107 @@ The user wants to add 7 high-impact features to FinChronicle to make it more use
 
 ## Phased Release Plan
 
+### Version 3.10.2 - Transaction Validation Layer (Foundation) 🛡️
+**Release Target:** 1 week after v3.10.1
+**Priority:** CRITICAL - Must implement BEFORE any new features
+
+**Why This is Critical:**
+Current transaction saving has NO validation for:
+- Invalid transaction types
+- Out-of-range amounts
+- Invalid categories
+- Future dates
+- XSS attacks via notes field
+- Data integrity issues
+
+**Implementation:**
+
+```javascript
+// Core validation function
+function validateTransaction(transaction) {
+  const errors = [];
+
+  // 1. Type validation
+  if (!['income', 'expense'].includes(transaction.type)) {
+    errors.push({ field: 'type', message: 'Invalid transaction type' });
+  }
+
+  // 2. Amount validation
+  if (isNaN(transaction.amount) || transaction.amount <= 0) {
+    errors.push({ field: 'amount', message: 'Amount must be a positive number' });
+  }
+  if (transaction.amount > 999999999) {  // ₹99 crore max
+    errors.push({ field: 'amount', message: 'Amount exceeds maximum limit' });
+  }
+
+  // 3. Category validation
+  const validCategories = transaction.type === 'income' ? incomeCategories : expenseCategories;
+  if (!validCategories.includes(transaction.category)) {
+    errors.push({ field: 'category', message: 'Invalid category for transaction type' });
+  }
+
+  // 4. Date validation
+  const date = new Date(transaction.date);
+  if (isNaN(date.getTime())) {
+    errors.push({ field: 'date', message: 'Invalid date format' });
+  }
+  if (date > new Date()) {
+    errors.push({ field: 'date', message: 'Future dates not allowed' });
+  }
+  if (date < new Date('1900-01-01')) {
+    errors.push({ field: 'date', message: 'Date too far in past' });
+  }
+
+  // 5. Notes sanitization (prevent XSS)
+  if (transaction.notes && transaction.notes.length > 500) {
+    errors.push({ field: 'notes', message: 'Notes too long (max 500 characters)' });
+  }
+  transaction.notes = sanitizeHTML(transaction.notes || '');
+
+  return {
+    valid: errors.length === 0,
+    errors: errors,
+    sanitized: transaction
+  };
+}
+
+function sanitizeHTML(str) {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
+
+// Update saveTransaction to use validation
+async function saveTransaction(transaction) {
+  const validation = validateTransaction(transaction);
+
+  if (!validation.valid) {
+    const errorMessage = validation.errors.map(e => e.message).join(', ');
+    showMessage(`⚠️ Validation Error: ${errorMessage}`);
+    return false;
+  }
+
+  // Save sanitized transaction
+  await saveTransactionToDB(validation.sanitized);
+  return true;
+}
+```
+
+**Files to Modify:**
+- `app.js`: Add validation functions, update saveTransaction()
+- No UI changes needed
+
+**Testing:**
+- Try saving with invalid type
+- Try saving negative amount
+- Try saving with SQL injection in notes
+- Try saving future date
+- Verify all edge cases caught
+
+---
+
 ### Version 3.11.0 - Recurring Transactions (Priority 1)
-**Release Target:** 2-3 weeks after v3.10.1
+**Release Target:** 4-5 weeks after v3.10.1 (revised from 2-3 weeks)
 
 **New IndexedDB Store:**
 ```javascript
@@ -67,16 +166,77 @@ Store: recurringTemplates
   category: string,
   notes: string,
   frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly',
+  dayOfMonth: number,            // 1-31, or 'last' for month-end
+  executionTime: string,         // '09:00' - consistent execution time
+  timezone: string,              // 'Asia/Kolkata' - user's timezone
   startDate: 'YYYY-MM-DD',
-  nextDueDate: 'YYYY-MM-DD',    // Calculated next occurrence
+  nextDueDate: string,           // ISO 8601 with timezone: '2026-03-01T09:00:00+05:30'
+  lastExecuted: string,          // ISO 8601 with timezone
   enabled: boolean,              // Can pause without deleting
-  createdAt: ISO timestamp,
-  lastGenerated: ISO timestamp   // Last time transaction was created
+  skipWeekends: boolean,         // Optional: Skip if due on weekend
+  createdAt: ISO timestamp
 }
 
 Indexes:
 - nextDueDate (for checking what's due)
 - enabled (filter active templates)
+```
+
+**Critical Addition: Timezone Handling**
+
+**Why:** Prevents bugs with daylight saving time, different timezones, and execution timing issues.
+
+**Implementation:**
+```javascript
+function checkRecurringTransactions() {
+  const now = new Date();
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  templates.forEach(template => {
+    if (!template.enabled) return;
+
+    const nextDue = new Date(template.nextDueDate);
+
+    // Only execute if:
+    // 1. Current time is past due date
+    // 2. Haven't executed today already
+    if (now >= nextDue && !executedToday(template)) {
+      generateTransaction(template);
+      updateNextDueDate(template);
+    }
+  });
+}
+
+function updateNextDueDate(template) {
+  const current = new Date(template.nextDueDate);
+  let next;
+
+  switch(template.frequency) {
+    case 'daily':
+      next = new Date(current);
+      next.setDate(current.getDate() + 1);
+      break;
+    case 'weekly':
+      next = new Date(current);
+      next.setDate(current.getDate() + 7);
+      break;
+    case 'monthly':
+      next = new Date(current);
+      next.setMonth(current.getMonth() + 1);
+      // Handle month-end: Jan 31 → Feb 28/29
+      if (template.dayOfMonth === 'last') {
+        next = new Date(next.getFullYear(), next.getMonth() + 1, 0);
+      } else {
+        next.setDate(Math.min(template.dayOfMonth, getDaysInMonth(next)));
+      }
+      break;
+    // ... other frequencies
+  }
+
+  // Preserve timezone
+  template.nextDueDate = next.toISOString();
+  template.lastExecuted = new Date().toISOString();
+}
 ```
 
 **Implementation:**
@@ -152,11 +312,17 @@ Indexes:
 }
 ```
 
-### localStorage Configuration
+### Storage Configuration
 
+**CRITICAL: Store in IndexedDB, NOT localStorage**
+
+**Why:** localStorage can be cleared by user or browser, causing data integrity issues. If user has 500 transactions with payment method data but localStorage is cleared, they lose access to that data.
+
+**New IndexedDB Store:**
 ```javascript
-// User preferences for enabled fields
+Store: appSettings
 {
+  id: 'config',  // Single config document
   enabledFields: {
     paymentMethod: false,    // Disabled by default
     account: false,
@@ -165,7 +331,43 @@ Indexes:
     attachedTo: false,
     referenceId: false,
     location: false
+  },
+  appVersion: '3.12.0',
+  lastUpdated: ISO timestamp
+}
+
+// No indexes needed (single document store)
+```
+
+**Fallback: Auto-Detection on Load**
+
+If appSettings store is empty (first load or cleared), automatically detect fields that have data:
+
+```javascript
+async function initializeEnabledFields() {
+  let config = await loadAppSettings();
+
+  if (!config) {
+    // First time or settings cleared - auto-detect
+    config = await autoDetectEnabledFields();
+    await saveAppSettings(config);
   }
+
+  return config;
+}
+
+async function autoDetectEnabledFields() {
+  const transactions = await loadDataFromDB();
+
+  return {
+    paymentMethod: transactions.some(t => t.paymentMethod),
+    account: transactions.some(t => t.account),
+    merchant: transactions.some(t => t.merchant),
+    expenseType: transactions.some(t => t.expenseType),
+    attachedTo: transactions.some(t => t.attachedTo),
+    referenceId: transactions.some(t => t.referenceId),
+    location: transactions.some(t => t.location)
+  };
 }
 ```
 
@@ -453,24 +655,66 @@ renderReports() {
 
 ## IndexedDB Migration
 
-**Bump DB version from 1 to 2:**
+**CRITICAL FIX: Bump DB version from 2 to 3** (not stay at 2)
+
+**Why:** Even though optional fields are nullable, we MUST bump DB version to:
+1. Trigger `onupgradeneeded` event
+2. Create new `appSettings` store
+3. Track schema evolution properly
+4. Prevent version conflicts with v3.13.0
 
 ```javascript
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 db.onupgradeneeded = function(event) {
   const db = event.target.result;
+  const oldVersion = event.oldVersion;
 
-  if (event.oldVersion < 2) {
-    // No structural changes needed
-    // Optional fields added to transaction schema with null defaults
-    // Existing transactions automatically get null values
-    console.log('Upgraded to v2: Optional fields added');
+  // v2: Add recurring templates (from v3.11.0)
+  if (oldVersion < 2) {
+    const recurringStore = db.createObjectStore('recurringTemplates', { keyPath: 'id' });
+    recurringStore.createIndex('nextDueDate', 'nextDueDate');
+    recurringStore.createIndex('enabled', 'enabled');
+    console.log('Upgraded to v2: Recurring templates added');
+  }
+
+  // v3: Add app settings store + optional fields
+  if (oldVersion < 3) {
+    // Create appSettings store for configuration
+    const settingsStore = db.createObjectStore('appSettings', { keyPath: 'id' });
+
+    // Optional fields added to transaction schema (no migration needed - nullable)
+    // Existing transactions automatically get null values for new fields
+
+    // Initialize default config
+    const defaultConfig = {
+      id: 'config',
+      enabledFields: {
+        paymentMethod: false,
+        account: false,
+        merchant: false,
+        expenseType: false,
+        attachedTo: false,
+        referenceId: false,
+        location: false
+      },
+      appVersion: '3.12.0',
+      lastUpdated: new Date().toISOString()
+    };
+
+    const transaction = event.target.transaction;
+    transaction.oncomplete = () => {
+      // Save default config after stores are created
+      const settingsTx = db.transaction(['appSettings'], 'readwrite');
+      settingsTx.objectStore('appSettings').add(defaultConfig);
+    };
+
+    console.log('Upgraded to v3: Optional fields system added');
   }
 };
 ```
 
-**No data migration needed** - optional fields default to null.
+**Data Migration:** None needed. Existing transactions get `null` for optional fields automatically.
 
 ---
 
