@@ -1,0 +1,1052 @@
+# Multi-Release Feature Plan: FinChronicle Enhancement
+
+## Context
+
+The user wants to add 7 high-impact features to FinChronicle to make it more useful for everyday users:
+
+1. **Budget Limits & Alerts** - Set monthly spending limits per category with visual warnings
+2. **Recurring Transactions** - Auto-add predictable monthly expenses (rent, subscriptions)
+3. **Receipt Photos** - Attach photo receipts to transactions (conservative: 500KB max)
+4. **Split Transactions** - Divide one transaction across multiple categories
+5. **Tags & Search** - Tag transactions and search/filter by tags
+6. **Savings Goals** - Track progress toward savings targets
+7. **Reports & Visualizations** - Charts and spending insights
+
+**User Priorities** (from user feedback):
+1. Recurring Transactions (highest priority)
+2. Reports & Visualizations
+3. Budget Limits & Alerts
+4. Others (lower priority)
+
+**Key Concern**: Receipt images could consume storage quickly. User chose conservative approach (500KB max, ~200-500 images per device).
+
+## Architecture Foundation (Already Exists)
+
+**Current Storage:**
+- IndexedDB: `FinChronicleDB` with `transactions` store
+- localStorage: Settings only (currency, darkMode, version, etc.)
+- No quota management or size tracking currently
+
+**Current Transaction Schema:**
+```javascript
+{
+  id: number,              // Date.now() timestamp
+  type: 'expense' | 'income',
+  amount: number,
+  category: string,
+  date: 'YYYY-MM-DD',
+  notes: string,
+  createdAt: ISO timestamp
+}
+```
+
+**Key Functions:**
+- `initDB()` - Initialize IndexedDB
+- `saveTransactionToDB(tx)` - Save transaction
+- `updateUI()` - Master UI refresh function
+- `updateSummary()` - Update summary cards
+- `validateAmount()` - Centralized amount validation
+
+**Recent Features (v3.10.0):**
+- Budget Health Card already exists (daily pace, projected spending, status indicators)
+- Monthly Insights with trends
+- Top Spending Categories
+
+## Phased Release Plan
+
+### Version 3.11.0 - Recurring Transactions (Priority 1)
+**Release Target:** 2-3 weeks after v3.10.1
+
+**New IndexedDB Store:**
+```javascript
+Store: recurringTemplates
+{
+  id: number,
+  type: 'expense' | 'income',
+  amount: number,
+  category: string,
+  notes: string,
+  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly',
+  startDate: 'YYYY-MM-DD',
+  nextDueDate: 'YYYY-MM-DD',    // Calculated next occurrence
+  enabled: boolean,              // Can pause without deleting
+  createdAt: ISO timestamp,
+  lastGenerated: ISO timestamp   // Last time transaction was created
+}
+
+Indexes:
+- nextDueDate (for checking what's due)
+- enabled (filter active templates)
+```
+
+**Implementation:**
+
+1. **New Settings Section**: "Recurring Transactions"
+   - List all recurring templates
+   - Add/Edit/Delete/Pause buttons
+   - Visual indicators for enabled/paused
+
+2. **Template Creation Modal**:
+   - Same fields as regular transaction
+   - Additional: Frequency dropdown, Start Date
+   - Save as template (not transaction)
+
+3. **Background Check Function**: `checkRecurringTransactions()`
+   - Runs on app startup and tab switch
+   - Compares today's date with `nextDueDate`
+   - Creates transaction if due
+   - Updates `nextDueDate` and `lastGenerated`
+   - Shows notification: "3 recurring transactions added"
+
+4. **UI Elements**:
+   - Badge on generated transactions: "🔁 From: Rent"
+   - Edit recurring template vs edit individual transaction
+   - Confirm dialog before deleting template
+
+**Files to Modify:**
+- `app.js`: Add recurring store init, check function, CRUD operations
+- `index.html`: Add recurring section in Settings tab
+- `css/styles.css`: Style recurring list and modal
+- `css/dark-mode.css`: Dark mode support
+- `sw.js`: Update cache version
+
+**Testing:**
+- Create monthly rent template
+- Advance system date, reload app
+- Verify transaction auto-created
+- Test edit, pause, delete
+
+---
+
+### Version 3.12.0 - Reports & Visualizations + Optional Fields System (Priority 2)
+**Release Target:** 4-5 weeks after v3.10.1
+
+---
+
+## Part 1: Optional Fields System (Core Feature) 🎯
+
+**Concept:** User-controlled optional fields that can be enabled/disabled in settings. Fields are hidden from UI when disabled but data is preserved in database.
+
+### Transaction Schema Update
+
+**Add optional fields to transaction object (all nullable):**
+```javascript
+{
+  // Core fields (always present)
+  id: number,
+  type: 'expense' | 'income',
+  amount: number,
+  category: string,
+  date: 'YYYY-MM-DD',
+  notes: string,
+  createdAt: ISO timestamp,
+
+  // Optional fields (v3.12.0) - nullable, controlled by user settings
+  paymentMethod: string | null,    // 'cash', 'upi', 'credit-card', 'debit-card', 'wallet', 'bank-transfer', 'other'
+  account: string | null,          // 'HDFC Savings', 'ICICI Credit Card', etc.
+  merchant: string | null,         // 'Swiggy', 'Amazon', 'John', etc.
+  expenseType: string | null,      // 'personal', 'business', 'tax-deductible', 'reimbursable'
+  attachedTo: string | null,       // 'self', 'spouse', 'kid1', 'parent', etc.
+  referenceId: string | null,      // UPI ID, cheque number, invoice number
+  location: string | null          // City/area (manual entry)
+}
+```
+
+### localStorage Configuration
+
+```javascript
+// User preferences for enabled fields
+{
+  enabledFields: {
+    paymentMethod: false,    // Disabled by default
+    account: false,
+    merchant: false,
+    expenseType: false,
+    attachedTo: false,
+    referenceId: false,
+    location: false
+  }
+}
+```
+
+### Settings UI: "Additional Transaction Fields"
+
+**New section in Settings tab:**
+
+```
+┌─────────────────────────────────────────────────┐
+│  📋 Additional Transaction Fields               │
+├─────────────────────────────────────────────────┤
+│  Enable optional fields to track more details.  │
+│  Disabled fields won't appear in forms.         │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 💳 Payment Method               [Toggle]  │ │
+│  │    Track cash, UPI, credit card, etc.     │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 🏦 Account/Source              [Toggle]   │ │
+│  │    Track which bank account or card       │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 🏪 Merchant/Vendor             [Toggle]   │ │
+│  │    Track who you paid                     │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 📊 Expense Type                [Toggle]   │ │
+│  │    Business, personal, tax-deductible     │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 👥 Attached To (Person)        [Toggle]   │ │
+│  │    Track family expenses                  │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 🔢 Reference/Transaction ID    [Toggle]   │ │
+│  │    UPI ID, invoice number                 │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  ┌───────────────────────────────────────────┐ │
+│  │ 📍 Location                    [Toggle]   │ │
+│  │    Where transaction happened             │ │
+│  └───────────────────────────────────────────┘ │
+│                                                  │
+│  [Reset to Defaults]                            │
+└─────────────────────────────────────────────────┘
+```
+
+### Transaction Form Behavior
+
+**When fields are ENABLED:**
+- Show "Additional Details" collapsible section below core fields
+- Only show enabled fields (others hidden)
+- All optional fields are... optional (can be left blank)
+
+**When fields are DISABLED:**
+- Fields don't appear in form for new transactions
+- When editing old transaction WITH data in disabled field:
+  - Temporarily show that field with info message
+  - "This field is disabled. You can edit/clear it or [enable in settings]"
+  - Preserve data on save (don't delete)
+
+### Core Functions
+
+```javascript
+// Get enabled fields from localStorage
+function getEnabledFields() { ... }
+
+// Save enabled fields configuration
+function setEnabledFields(config) { ... }
+
+// Toggle field on/off with confirmation if data exists
+function toggleField(fieldName, enabled) { ... }
+
+// Check if any transaction has data in this field
+function checkIfFieldHasData(fieldName) { ... }
+
+// Dynamically show/hide form fields based on config
+function updateTransactionForm() { ... }
+
+// Safe getter - returns null if field disabled
+function getFieldValue(transaction, fieldName) { ... }
+
+// Safe setter - preserves data even if field disabled
+function setFieldValue(transaction, fieldName, value) { ... }
+
+// Show disabled field temporarily when editing old transaction
+function showTemporaryField(fieldName, value) { ... }
+```
+
+### Edge Case Handling
+
+**Scenario 1: User disables field after using it**
+- ✅ Data preserved in database (hidden, not deleted)
+- ✅ Field disappears from form
+- ✅ Analytics charts hidden (no crash)
+- ✅ CSV export includes column (data integrity)
+- ✅ Show confirmation: "50 transactions have data. Will be hidden but not deleted."
+
+**Scenario 2: Editing old transaction with disabled field**
+- ✅ Temporarily show field with existing data
+- ✅ Add info badge: "This field is currently disabled"
+- ✅ User can edit or clear value
+- ✅ Link to settings to re-enable field
+- ✅ Data preserved on save
+
+**Scenario 3: Re-enabling field**
+- ✅ Field reappears in form
+- ✅ Old data immediately visible
+- ✅ No data loss, no migration needed
+- ✅ Message: "Field re-enabled. Your old data is back!"
+
+**Scenario 4: Analytics with disabled fields**
+- ✅ Conditional rendering: only show charts for enabled fields
+- ✅ Null checks before accessing field data
+- ✅ No crashes if field disabled mid-use
+
+**Scenario 5: CSV export**
+- ✅ Include column if ANY transaction has data in that field
+- ✅ Empty cells for transactions without data
+- ✅ On import, data preserved
+
+### Dropdown Options for Optional Fields
+
+**Payment Method:**
+- 💵 Cash
+- 📱 UPI (PhonePe, Google Pay, Paytm)
+- 💳 Credit Card
+- 💳 Debit Card
+- 👛 Wallet (Paytm, Amazon Pay)
+- 🏦 Bank Transfer (NEFT/RTGS/IMPS)
+- ➡️ Other
+
+**Expense Type:**
+- Personal
+- Business Expense
+- Tax Deductible
+- Reimbursable
+- Investment
+
+**Account:** (Free text input with suggestions)
+**Merchant:** (Free text input with autocomplete from existing)
+**Attached To:** (Free text or predefined: Self, Spouse, Kid 1, Kid 2, Parent, Other)
+**Reference ID:** (Free text)
+**Location:** (Free text)
+
+---
+
+## Part 2: Reports & Visualizations
+
+**New Tab:** "Reports" (replaces or extends Groups tab)
+
+### Core Report Types
+
+1. **Spending by Category (Pie Chart)**
+   - HTML/CSS pie chart (no chart.js)
+   - Top 5-7 categories
+   - Percentages and amounts
+
+2. **Income vs Expense Trend (Bar Chart)**
+   - Monthly bars for last 6-12 months
+   - Side-by-side income/expense bars
+   - HTML/CSS bars (height percentages)
+
+3. **Week-over-Week Spending**
+   - Last 4 weeks comparison
+   - Show if spending increasing/decreasing
+   - Color-coded trend arrows
+
+4. **Best/Worst Spending Days**
+   - Days of month with highest/lowest spending
+   - Helps identify patterns (payday splurges, etc.)
+
+### Optional Field Analytics (Dynamic)
+
+**Only shown if respective field is enabled:**
+
+5. **Payment Method Breakdown** (if paymentMethod enabled)
+   - Pie chart: Cash vs UPI vs Credit Card vs others
+   - "85% of spending is digital"
+   - Trend: Digital vs cash ratio over time
+
+6. **Account-wise Spending** (if account enabled)
+   - Bar chart per account/card
+   - "HDFC Credit Card: ₹15,000 | SBI Savings: ₹10,000"
+   - Useful for credit card budget tracking
+
+7. **Top Merchants** (if merchant enabled)
+   - List of top 10 merchants by spending
+   - "You spent ₹5,000 at Swiggy in 3 months"
+   - Identify subscription services
+
+8. **Business vs Personal** (if expenseType enabled)
+   - Split view of business vs personal expenses
+   - Tax report generation
+   - Reimbursable expenses pending
+
+9. **Per-Person Spending** (if attachedTo enabled)
+   - Family expense breakdown
+   - "Kids: ₹20,000 | Self: ₹15,000 | Spouse: ₹18,000"
+
+### Report Generation Functions
+
+```javascript
+// Core reports (always available)
+generateCategoryPieData()
+generateMonthlyTrendData()
+generateWeeklyTrendData()
+generateDayOfMonthAnalysis()
+
+// Optional field reports (conditional)
+generatePaymentMethodBreakdown()    // if paymentMethod enabled
+generateAccountWiseSpending()       // if account enabled
+generateTopMerchants()              // if merchant enabled
+generateBusinessVsPersonal()        // if expenseType enabled
+generatePerPersonSpending()         // if attachedTo enabled
+
+// Dynamic report renderer
+renderReports() {
+  const enabled = getEnabledFields();
+
+  // Always show core reports
+  renderCategoryPieChart();
+  renderMonthlyTrend();
+
+  // Conditionally show optional field reports
+  if (enabled.paymentMethod) renderPaymentMethodBreakdown();
+  if (enabled.account) renderAccountWiseSpending();
+  if (enabled.merchant) renderTopMerchants();
+  // ... etc
+}
+```
+
+### Date Range Selector
+
+- Dropdown: Last 3 months, 6 months, 1 year, All time
+- Filter all reports by range
+- Default: Last 6 months
+
+---
+
+## Files to Modify
+
+**app.js:**
+- Add optional fields to transaction schema
+- Add getEnabledFields(), setEnabledFields(), toggleField()
+- Add updateTransactionForm() for dynamic form rendering
+- Add safe getFieldValue() and setFieldValue()
+- Add report generation functions (core + optional)
+- Add dynamic renderReports() with conditional logic
+- Update saveTransaction() to handle optional fields
+- Update editTransaction() to show disabled fields temporarily
+- Update exportToCSV() to include optional field columns
+
+**index.html:**
+- Add "Additional Transaction Fields" section in Settings tab
+- Add toggle switches for each optional field
+- Add "Additional Details" collapsible section in transaction form
+- Add optional field dropdowns/inputs (conditionally shown)
+- Add Reports tab or extend Groups tab
+- Add chart containers for all report types
+
+**css/styles.css:**
+- Style field toggle list and switches
+- Style "Additional Details" section in form
+- Style temporary field info messages
+- Style optional field badges in transaction list
+- Chart styles (bars, pie segments, legends)
+- Report grid layout
+
+**css/dark-mode.css:**
+- Dark mode for field toggles
+- Dark mode for optional field badges
+- Dark mode for charts and reports
+
+**sw.js:**
+- Update cache version to v3.12.0
+
+---
+
+## IndexedDB Migration
+
+**Bump DB version from 1 to 2:**
+
+```javascript
+const DB_VERSION = 2;
+
+db.onupgradeneeded = function(event) {
+  const db = event.target.result;
+
+  if (event.oldVersion < 2) {
+    // No structural changes needed
+    // Optional fields added to transaction schema with null defaults
+    // Existing transactions automatically get null values
+    console.log('Upgraded to v2: Optional fields added');
+  }
+};
+```
+
+**No data migration needed** - optional fields default to null.
+
+---
+
+## Testing
+
+**Core Functionality:**
+- Enable/disable each field via settings
+- Verify field appears/disappears in form
+- Create transaction with optional fields
+- Edit transaction, verify data preserved
+- Disable field with existing data, verify confirmation dialog
+- Edit old transaction with disabled field, verify temporary field shown
+- Re-enable field, verify old data visible
+
+**Edge Cases:**
+- Disable field → create transactions → re-enable field
+- Edit transaction with multiple disabled fields
+- CSV export with mixed enabled/disabled fields
+- Analytics with disabled fields (no crash)
+- Null checks in all report functions
+
+**Reports:**
+- Generate all core reports with 12+ months data
+- Verify optional field reports only show when enabled
+- Test payment method breakdown with mixed data
+- Test account-wise spending with multiple accounts
+- Verify calculations match raw totals
+- Test responsive layout on mobile
+- Test dark mode for all charts
+
+---
+
+## Storage Impact
+
+**Per transaction with ALL optional fields:**
+- Core fields: ~150 bytes
+- Optional fields: ~100 bytes
+- **Total: ~250 bytes per transaction**
+- **1000 transactions: ~250 KB** (negligible)
+
+---
+
+## User Benefits
+
+✅ **Flexibility** - Power users enable what they need, simple users stay simple
+✅ **Progressive Disclosure** - App grows with user sophistication
+✅ **No Bloat** - Transaction form stays clean by default
+✅ **Data Safety** - Disabling field doesn't delete data
+✅ **Future-Proof** - Easy to add more optional fields
+✅ **Analytics Scale** - Reports dynamically adjust to enabled fields
+✅ **Privacy** - Location tracking is opt-in, not forced
+
+---
+
+### Version 3.13.0 - Budget Limits & Alerts (Priority 3)
+**Release Target:** 6-7 weeks after v3.10.1
+
+**New IndexedDB Store:**
+```javascript
+Store: budgets
+{
+  id: number,
+  category: string,          // Must match existing category
+  monthlyLimit: number,      // Budget amount
+  alertThreshold: number,    // % to trigger warning (e.g., 80%)
+  createdAt: ISO timestamp,
+  updatedAt: ISO timestamp
+}
+
+Indexes:
+- category (one budget per category)
+```
+
+**Implementation:**
+
+1. **Budget Management UI** (in Settings or new Budgets tab):
+   - List all categories with budget status
+   - Set limit button (opens modal)
+   - Shows: Spent / Limit (with progress bar)
+   - Color-coded: Green (<80%), Yellow (80-100%), Red (>100%)
+
+2. **Budget Alert System**:
+   - Check on every transaction save
+   - Compare current month spending vs budget
+   - Show warning modal: "⚠️ Groceries: 85% of budget used"
+   - Options: OK / View Details / Adjust Budget
+
+3. **Budget Health Integration**:
+   - Extend existing Budget Health Card (v3.10.0)
+   - Show category-level budget status
+   - Aggregate status: "3 categories over budget"
+
+4. **Visual Indicators**:
+   - Summary cards show budget warnings
+   - Transaction list: Badge on transactions in over-budget categories
+   - Category filter shows budget status
+
+**Files to Modify:**
+- `app.js`: Add budgets store, check logic, alert modals
+- `index.html`: Add budget management UI
+- `css/styles.css`: Progress bars, status badges
+- `css/dark-mode.css`: Dark mode colors
+- `sw.js`: Update cache version
+
+**Testing:**
+- Set budget for Groceries: ₹5000
+- Add transactions totaling ₹4500
+- Verify warning at 80% threshold
+- Add transaction exceeding budget
+- Verify red status and alert
+
+---
+
+### Version 3.14.0 - Tags & Search (Medium Priority)
+**Release Target:** 8-9 weeks after v3.10.1
+
+**Transaction Schema Update:**
+```javascript
+{
+  // ... existing fields ...
+  tags: string[]  // New field: ['vacation', 'business', 'urgent']
+}
+```
+
+**Implementation:**
+
+1. **Tag Input** (in transaction form):
+   - Multi-tag input field
+   - Autocomplete from existing tags
+   - Comma-separated or chip-based input
+
+2. **Tag Management**:
+   - Tag cloud view (all tags with counts)
+   - Rename tag (updates all transactions)
+   - Delete tag (removes from all transactions)
+
+3. **Search Bar**:
+   - New search input in List tab header
+   - Search by: amount, category, notes, tags
+   - Real-time filtering as user types
+
+4. **Tag Filtering**:
+   - Click tag to filter transactions
+   - Combine with existing month/category filters
+   - Show active filters as chips
+
+**Files to Modify:**
+- `app.js`: Add tags field to transaction object, search function
+- `index.html`: Add tag input, search bar, tag cloud
+- `css/styles.css`: Tag chips, search bar, filter pills
+- `css/dark-mode.css`: Dark mode support
+- `sw.js`: Update cache version
+
+**IndexedDB Migration:**
+- Bump DB version to 2
+- Add tags field to existing transactions (default: [])
+- Create index on tags (multiEntry: true)
+
+**Testing:**
+- Add tags to multiple transactions
+- Search for tag, verify filtering
+- Test search by amount, notes
+- Test tag rename/delete
+
+---
+
+### Version 3.15.0 - Split Transactions (Medium Priority)
+**Release Target:** 10-11 weeks after v3.10.1
+
+**Transaction Schema Update:**
+```javascript
+{
+  // ... existing fields ...
+  isSplit: boolean,           // New: Is this a split transaction?
+  splits: [                    // New: Array of splits (if isSplit = true)
+    {
+      category: string,
+      amount: number,
+      notes: string
+    }
+  ]
+}
+```
+
+**Implementation:**
+
+1. **Split Transaction Toggle** (in form):
+   - Checkbox: "Split this transaction"
+   - When checked, show split editor
+
+2. **Split Editor**:
+   - List of splits with mini-form for each
+   - Add/Remove split buttons
+   - Total must equal main amount (validation)
+   - Each split: Category, Amount, Notes
+
+3. **Display Logic**:
+   - Transaction list: Show "📋 Split" badge
+   - Click to expand and show all splits
+   - Summary calculations include split amounts per category
+
+4. **Analytics Integration**:
+   - Category totals include split amounts
+   - Budget tracking counts split amounts per category
+
+**Files to Modify:**
+- `app.js`: Add split logic, validation, rendering
+- `index.html`: Add split editor UI
+- `css/styles.css`: Split editor layout, split display
+- `css/dark-mode.css`: Dark mode support
+- `sw.js`: Update cache version
+
+**IndexedDB Migration:**
+- Bump DB version to 3
+- Add isSplit and splits fields (default: false, [])
+
+**Testing:**
+- Create split transaction: ₹1000 = ₹600 (Food) + ₹400 (Transport)
+- Verify total validation
+- Verify category reports count splits correctly
+- Test edit/delete of split transactions
+
+---
+
+### Version 3.16.0 - Savings Goals (Medium Priority)
+**Release Target:** 12-13 weeks after v3.10.1
+
+**New IndexedDB Store:**
+```javascript
+Store: savingsGoals
+{
+  id: number,
+  name: string,              // "Vacation Fund", "Emergency Fund"
+  targetAmount: number,      // Goal amount
+  currentAmount: number,     // Tracked manually or auto
+  deadline: 'YYYY-MM-DD',    // Target date
+  category: string,          // Optional: Link to transaction category
+  createdAt: ISO timestamp
+}
+
+Indexes:
+- deadline (sort by urgency)
+```
+
+**Implementation:**
+
+1. **Goals Management** (new section in Summary or Settings):
+   - List all goals with progress bars
+   - Add/Edit/Delete goals
+   - Manual contribution button (add ₹X to goal)
+
+2. **Progress Visualization**:
+   - Circular progress indicator
+   - Percentage completed
+   - Amount remaining
+   - Days until deadline
+
+3. **Goal Contribution Tracking**:
+   - Option 1: Manual updates (simple)
+   - Option 2: Auto-track from income category (complex)
+   - Recommend Option 1 for v3.16.0
+
+4. **Milestone Alerts**:
+   - Show celebration when 25%, 50%, 75%, 100% reached
+   - Notification: "🎉 You're halfway to your Vacation goal!"
+
+**Files to Modify:**
+- `app.js`: Add goals store, CRUD operations, progress calculations
+- `index.html`: Add goals section, modal for create/edit
+- `css/styles.css`: Progress circles, goal cards
+- `css/dark-mode.css`: Dark mode support
+- `sw.js`: Update cache version
+
+**Testing:**
+- Create goal: "Vacation ₹50,000 by Dec 2026"
+- Add contributions manually
+- Verify progress calculation
+- Test deadline approaching warnings
+
+---
+
+### Version 3.17.0 - Receipt Photos (Lower Priority)
+**Release Target:** 14-15 weeks after v3.10.1
+
+**New IndexedDB Store:**
+```javascript
+Store: receipts
+{
+  id: number,
+  transactionId: number,     // Foreign key to transaction
+  imageBlob: Blob,           // Compressed image (JPEG, 500KB max)
+  fileName: string,          // Original filename
+  fileSize: number,          // Bytes
+  uploadedAt: ISO timestamp
+}
+
+Indexes:
+- transactionId (one-to-many: transaction can have multiple receipts)
+```
+
+**Storage Management:**
+```javascript
+// New utility functions
+- checkStorageQuota() - Query navigator.storage.estimate()
+- compressImage(file) - Compress to 500KB max, JPEG quality 0.7
+- getTotalStorageUsed() - Sum of all IndexedDB data
+- showStorageWarning() - Alert when >80% quota used
+```
+
+**Implementation:**
+
+1. **Image Upload** (in transaction form):
+   - File input button: "📎 Attach Receipt"
+   - Show thumbnail preview
+   - Max 500KB (compress if larger)
+   - Multiple receipts per transaction
+
+2. **Image Display**:
+   - Transaction list: 📷 icon if has receipts
+   - Click to open lightbox modal
+   - Swipe between multiple receipts
+   - Download original button
+
+3. **Storage Monitoring**:
+   - Settings: Show total storage used / available
+   - Warning banner if >80% quota used
+   - Option to delete old receipts
+
+4. **Compression Strategy**:
+   - Use Canvas API to resize/compress
+   - Target: 800px max width, JPEG quality 0.7
+   - Fallback: Reject if still >500KB after compression
+
+**Files to Modify:**
+- `app.js`: Add receipts store, image compression, lightbox
+- `index.html`: Add file input, storage monitor, lightbox modal
+- `css/styles.css`: Lightbox, thumbnails, storage UI
+- `css/dark-mode.css`: Dark mode support
+- `sw.js`: Update cache version (DO NOT cache receipts)
+
+**IndexedDB Migration:**
+- Bump DB version to 4 (or current +1)
+- Create receipts store
+- No changes to transactions store
+
+**Testing:**
+- Upload 2MB image, verify compression to <500KB
+- Attach multiple receipts to one transaction
+- Check storage quota warning at 80%
+- Test on low-storage device
+- Verify offline functionality
+
+**Security:**
+- Validate file type (image/jpeg, image/png only)
+- Sanitize filenames
+- No external image hosting (privacy-first)
+
+---
+
+## Version Summary Timeline
+
+| Version | Feature | Priority | Weeks from 3.10.1 | Estimated Release |
+|---------|---------|----------|-------------------|-------------------|
+| 3.11.0 | Recurring Transactions | **High** | 2-3 | Early March 2026 |
+| 3.12.0 | **Optional Fields System** + Reports & Visualizations | **High** | 4-5 | Late March 2026 |
+| 3.13.0 | Budget Limits & Alerts | **High** | 6-7 | Mid April 2026 |
+| 3.14.0 | Tags & Search | Medium | 8-9 | Late April 2026 |
+| 3.15.0 | Split Transactions | Medium | 10-11 | Mid May 2026 |
+| 3.16.0 | Savings Goals | Medium | 12-13 | Late May 2026 |
+| 3.17.0 | Receipt Photos | Low | 14-15 | Early June 2026 |
+
+## Database Schema Evolution
+
+**Current (v3.10.1):**
+- DB Version: 1
+- Stores: transactions
+- Fields: id, type, amount, category, date, notes, createdAt
+
+**v3.11.0:**
+- DB Version: 2
+- New Store: recurringTemplates
+- Indexes: nextDueDate, enabled
+
+**v3.12.0:**
+- DB Version: 2 (no version bump needed)
+- Update: transactions gets 7 optional fields (all nullable):
+  - `paymentMethod`, `account`, `merchant`, `expenseType`, `attachedTo`, `referenceId`, `location`
+- localStorage: Add `enabledFields` configuration object
+
+**v3.13.0:**
+- DB Version: 3
+- New Store: budgets
+- Indexes: category
+
+**v3.14.0:**
+- DB Version: 4
+- Update: transactions gets `tags: string[]` field
+- New Index: tags (multiEntry: true)
+
+**v3.15.0:**
+- DB Version: 5
+- Update: transactions gets `isSplit: boolean`, `splits: array` fields
+
+**v3.16.0:**
+- DB Version: 6
+- New Store: savingsGoals
+- Indexes: deadline
+
+**v3.17.0:**
+- DB Version: 7
+- New Store: receipts
+- Indexes: transactionId
+
+## Storage Estimates (per 1000 transactions)
+
+| Data Type | Size per Item | 1000 Items |
+|-----------|--------------|------------|
+| Transactions (core fields only) | ~150 bytes | ~150 KB |
+| Transactions (with ALL optional fields) | ~250 bytes | ~250 KB |
+| Recurring Templates | ~150 bytes | ~15 KB (assume 100 templates) |
+| Budgets | ~100 bytes | ~2 KB (20 categories max) |
+| Savings Goals | ~150 bytes | ~3 KB (20 goals max) |
+| Receipts (500KB each) | 500 KB | 50 MB (100 receipts) |
+
+**Total for Active User (1000 transactions, 100 receipts):**
+- Core fields only: ~150 KB
+- With ALL optional fields enabled: ~250 KB
+- With receipts: ~50 MB
+- Still well within 50-100MB IndexedDB quota
+
+**Optional Fields Overhead:**
+- Payment Method: ~10-20 bytes
+- Account: ~20-30 bytes
+- Merchant: ~20-50 bytes
+- Expense Type: ~10-20 bytes
+- Attached To: ~10-20 bytes
+- Reference ID: ~20-50 bytes
+- Location: ~10-20 bytes
+- **Total overhead: ~100 bytes per transaction** (negligible)
+
+**Receipt Storage Reality Check:**
+- Conservative 500KB limit = ~200-500 receipts per device (safe)
+- Most users won't attach receipts to every transaction
+- Can add cleanup: "Delete receipts older than 1 year?"
+
+## Testing Strategy
+
+**For Each Release:**
+
+1. **Unit Tests** (in test repo):
+   - Data validation functions
+   - Calculation accuracy
+   - Edge cases (empty data, negative amounts)
+
+2. **Manual Tests**:
+   - Feature works as expected
+   - Offline functionality maintained
+   - Dark mode support
+   - Responsive on mobile (<480px)
+   - Accessibility (keyboard nav, screen reader)
+
+3. **Migration Tests**:
+   - Upgrade from previous version preserves data
+   - New fields have sensible defaults
+   - No data loss
+
+4. **Performance Tests**:
+   - Load time with 1000+ transactions
+   - Filtering/search speed
+   - IndexedDB query performance
+
+## Version Update Protocol
+
+**For EACH release, update these 3 files:**
+
+1. **app.js** - Line 2:
+   ```javascript
+   const APP_VERSION = '3.11.0';
+   ```
+
+2. **sw.js** - Line 1-4:
+   ```javascript
+   // Version: 3.11.0
+   const CACHE_NAME = 'finchronicle-v3.11.0';
+   ```
+
+3. **manifest.json**:
+   ```json
+   "version": "3.11.0"
+   ```
+
+## Maintenance Between Releases
+
+- Update CHANGELOG.md with features, fixes, technical details
+- Update CLAUDE.md if new patterns introduced
+- Create feature documentation in `docs/` folder
+- Run validation: `python3 -m http.server 8000`
+- Test offline mode (Network tab → Offline checkbox)
+- Test on iOS Safari and Chrome Mobile
+
+## Risks & Mitigation
+
+**Risk 1: Storage Quota Exceeded (Receipts)**
+- Mitigation: Conservative 500KB limit, compression, storage monitoring
+- Fallback: Allow deletion of old receipts
+
+**Risk 2: Performance Degradation (Large Datasets)**
+- Mitigation: Proper IndexedDB indexes, pagination (already exists)
+- Fallback: Lazy-loading, virtual scrolling if needed
+
+**Risk 3: Complex Features Break Simplicity**
+- Mitigation: Keep UI clean, hide advanced features in collapsible sections
+- Philosophy: Progressive disclosure (simple by default, powerful when needed)
+
+**Risk 4: IndexedDB Migration Failures**
+- Mitigation: Test migrations thoroughly, maintain backward compatibility
+- Fallback: Export/import data if migration fails
+
+## Philosophy Preservation
+
+Throughout all releases, maintain core principles:
+
+✅ **Zero dependencies** (except Remix Icon CDN)
+✅ **No frameworks** - Pure vanilla JS
+✅ **No build tools** - Direct file serving
+✅ **100% offline-first** - Works without internet
+✅ **Privacy-first** - All data stays on device
+✅ **No backend** - Client-side only
+✅ **Progressive disclosure** - Simple by default, powerful when needed (via Optional Fields)
+
+## Key Innovation: Optional Fields System 🎯
+
+The **Optional Fields System** (v3.12.0) is a game-changing feature that solves a fundamental problem:
+
+**Problem:** Different users need different fields. Power users want detailed tracking (payment method, account, merchant), while simple users just want amount + category.
+
+**Solution:** User-controlled optional fields that can be toggled on/off in settings.
+
+**Benefits:**
+1. **Flexibility:** App adapts to user sophistication level
+2. **No bloat:** Transaction form stays clean for basic users
+3. **Data safety:** Disabling field hides it but doesn't delete data
+4. **Future-proof:** Easy to add more optional fields without redesign
+5. **Analytics scale:** Reports dynamically adjust based on enabled fields
+6. **Privacy:** Location tracking is opt-in, not forced
+
+**7 Optional Fields Available:**
+- 💳 Payment Method (cash, UPI, credit card, etc.)
+- 🏦 Account/Source (which bank account/card)
+- 🏪 Merchant/Vendor (who you paid)
+- 📊 Expense Type (personal, business, tax-deductible)
+- 👥 Attached To (family member)
+- 🔢 Reference/Transaction ID (UPI ID, invoice)
+- 📍 Location (city/area)
+
+**Edge Cases Handled:**
+- ✅ Disable field → data preserved (hidden, not deleted)
+- ✅ Edit old transaction → temporarily show disabled field with data
+- ✅ Re-enable field → old data reappears instantly
+- ✅ Analytics → conditional rendering, no crashes
+- ✅ CSV export → includes columns if data exists
+
+This approach mirrors professional accounting software (QuickBooks, FreshBooks) and makes FinChronicle scalable from casual users to power users.
+
+## Next Steps
+
+1. ✅ **Review this plan with user** - COMPLETE
+2. **Start with v3.11.0 (Recurring Transactions)**
+3. **Implement v3.12.0 (Optional Fields + Reports)** - Critical foundation
+4. **Continue through v3.13.0 to v3.17.0**
+5. **Release and gather feedback**
+6. **Iterate based on user needs**
+
+---
+
+**Plan Complete!** Ready to proceed with implementation.
+
+**Last Updated:** 2026-02-18
+**Planned Completion:** June 2026 (all 7 versions)
