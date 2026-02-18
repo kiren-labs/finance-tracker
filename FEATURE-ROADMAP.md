@@ -780,6 +780,10 @@ Store: budgets
   category: string,          // Must match existing category
   monthlyLimit: number,      // Budget amount
   alertThreshold: number,    // % to trigger warning (e.g., 80%)
+  rolloverEnabled: boolean,  // NEW: Enable budget rollover
+  rolloverBalance: number,   // NEW: Current rollover amount
+  budgetType: string,        // NEW: 'fixed' | 'envelope' | 'percentage'
+  resetDay: number,          // NEW: Day of month to reset (default: 1)
   createdAt: ISO timestamp,
   updatedAt: ISO timestamp
 }
@@ -787,6 +791,79 @@ Store: budgets
 Indexes:
 - category (one budget per category)
 ```
+
+**NEW: Budget Rollover System**
+
+**Why:** Users expect unused budget to rollover to next month (envelope budgeting).
+
+**Rollover Logic:**
+```javascript
+function calculateAvailableBudget(category, month) {
+  const budget = getBudget(category);
+  const currentSpending = getCategorySpending(category, month);
+
+  let available = budget.monthlyLimit;
+
+  // Add rollover from previous month (if enabled)
+  if (budget.rolloverEnabled) {
+    const previousMonth = getPreviousMonth(month);
+    const previousSpending = getCategorySpending(category, previousMonth);
+    const previousSavings = budget.monthlyLimit - previousSpending;
+
+    // Only rollover positive savings (not overspending)
+    if (previousSavings > 0) {
+      available += previousSavings;
+      budget.rolloverBalance = previousSavings;
+    } else {
+      budget.rolloverBalance = 0;
+    }
+  }
+
+  return {
+    total: available,
+    spent: currentSpending,
+    remaining: available - currentSpending,
+    percentUsed: (currentSpending / available) * 100
+  };
+}
+
+// Display in UI
+function renderBudgetCard(category) {
+  const status = calculateAvailableBudget(category, getCurrentMonth());
+
+  return `
+    <div class="budget-card">
+      <h4>${category}</h4>
+      <div class="budget-amounts">
+        <span>Spent: ${formatCurrency(status.spent)}</span>
+        <span>Budget: ${formatCurrency(status.total)}</span>
+        ${status.rolloverBalance > 0 ?
+          `<small>+ ${formatCurrency(status.rolloverBalance)} rollover</small>` : ''}
+      </div>
+      <div class="budget-progress">
+        <div class="progress-bar" style="width: ${Math.min(status.percentUsed, 100)}%"></div>
+      </div>
+      <span class="${status.percentUsed > 100 ? 'over-budget' : 'on-track'}">
+        ${formatCurrency(status.remaining)} remaining
+      </span>
+    </div>
+  `;
+}
+```
+
+**Budget Types:**
+
+1. **Fixed Budget** (default):
+   - Always resets to ₹10,000 each month
+   - No rollover
+
+2. **Envelope Budget** (rollover enabled):
+   - Unused budget carries forward
+   - Example: Spend ₹8,000 of ₹10,000 → Next month: ₹12,000 available
+
+3. **Percentage Budget** (advanced):
+   - Budget = X% of income
+   - Example: "Groceries = 20% of monthly salary"
 
 **Implementation:**
 
@@ -1015,13 +1092,102 @@ Indexes:
 - transactionId (one-to-many: transaction can have multiple receipts)
 ```
 
-**Storage Management:**
+**Storage Management: CRITICAL - Quota Enforcement**
+
+**Browser Storage Limits:**
+- Desktop Chrome: ~60% of free disk space
+- Mobile Chrome/Safari: ~500MB - 1GB
+- Must enforce BEFORE hitting limits
+
 ```javascript
-// New utility functions
-- checkStorageQuota() - Query navigator.storage.estimate()
-- compressImage(file) - Compress to 500KB max, JPEG quality 0.7
-- getTotalStorageUsed() - Sum of all IndexedDB data
-- showStorageWarning() - Alert when >80% quota used
+// 1. Pre-flight check BEFORE upload
+async function canAddReceipt(fileSize) {
+  const estimate = await navigator.storage.estimate();
+  const available = estimate.quota - estimate.usage;
+  const afterUpload = estimate.usage + fileSize;
+  const percentUsed = (afterUpload / estimate.quota) * 100;
+
+  if (percentUsed > 95) {
+    showCriticalStorageModal('Cannot upload. Storage is critically low. Please delete old receipts.');
+    return false;
+  }
+
+  if (percentUsed > 90) {
+    const confirmed = await showWarningModal('Storage is 90% full. Upload anyway?');
+    if (!confirmed) return false;
+  }
+
+  if (percentUsed > 80) {
+    showStorageWarningBanner('Storage is 80% full. Consider deleting old receipts.');
+  }
+
+  return true;
+}
+
+// 2. Adaptive compression based on available storage
+async function adaptiveCompression(file) {
+  const estimate = await navigator.storage.estimate();
+  const percentUsed = (estimate.usage / estimate.quota) * 100;
+
+  let quality = 0.8;
+  if (percentUsed > 90) quality = 0.5;        // Aggressive compression
+  else if (percentUsed > 80) quality = 0.6;   // Moderate compression
+  else if (percentUsed > 70) quality = 0.7;   // Light compression
+
+  return await compressImage(file, quality);
+}
+
+// 3. Proactive cleanup suggestions
+async function suggestCleanup() {
+  const receipts = await getAllReceipts();
+  const oldReceipts = receipts.filter(r => {
+    const age = Date.now() - new Date(r.uploadedAt).getTime();
+    return age > 365 * 24 * 60 * 60 * 1000; // 1 year
+  });
+
+  if (oldReceipts.length > 20) {
+    const totalSize = oldReceipts.reduce((sum, r) => sum + r.fileSize, 0);
+    const sizeMB = (totalSize / 1024 / 1024).toFixed(1);
+
+    showCleanupModal({
+      title: 'Storage Cleanup',
+      message: `You have ${oldReceipts.length} receipts older than 1 year (${sizeMB} MB). Delete them?`,
+      actions: [
+        { label: 'View Receipts', action: () => showReceiptList(oldReceipts) },
+        { label: `Delete All (Free ${sizeMB} MB)`, action: () => bulkDeleteReceipts(oldReceipts) },
+        { label: 'Not Now', action: () => {} }
+      ]
+    });
+  }
+}
+
+// 4. Storage monitoring dashboard (in Settings)
+async function renderStorageStatus() {
+  const estimate = await navigator.storage.estimate();
+  const usedMB = (estimate.usage / 1024 / 1024).toFixed(1);
+  const totalMB = (estimate.quota / 1024 / 1024).toFixed(1);
+  const percentUsed = ((estimate.usage / estimate.quota) * 100).toFixed(1);
+
+  const receiptsData = await getReceiptsStorage();
+  const transactionsData = await getTransactionsStorage();
+
+  return `
+    <div class="storage-status ${percentUsed > 80 ? 'warning' : ''}">
+      <h3>Storage Usage</h3>
+      <div class="storage-bar">
+        <div class="storage-used" style="width: ${percentUsed}%"></div>
+      </div>
+      <p>${usedMB} MB / ${totalMB} MB (${percentUsed}%)</p>
+
+      <div class="storage-breakdown">
+        <div>Receipts: ${(receiptsData.size / 1024 / 1024).toFixed(1)} MB (${receiptsData.count} files)</div>
+        <div>Transactions: ${(transactionsData.size / 1024).toFixed(1)} KB</div>
+      </div>
+
+      ${percentUsed > 80 ? '<button onclick="suggestCleanup()">Clean Up Old Receipts</button>' : ''}
+    </div>
+  `;
+}
 ```
 
 **Implementation:**
