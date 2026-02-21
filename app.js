@@ -997,8 +997,8 @@ function loadSummaryState() {
 // Get previous calendar month string
 function getPreviousMonth(currentMonth) {
     const [year, month] = currentMonth.split('-').map(Number);
-    const date = new Date(year, month - 1, 1); // Current month's first day
-    date.setMonth(date.getMonth() - 1); // Go back one month
+    const date = new Date(Date.UTC(year, month - 1, 1)); // Current month's first day in UTC
+    date.setUTCMonth(date.getUTCMonth() - 1); // Go back one month
     return date.toISOString().slice(0, 7);
 }
 
