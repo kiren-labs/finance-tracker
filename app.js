@@ -2001,13 +2001,15 @@ function parseBackupCSV(text) {
             return; // Skip invalid rows
         }
 
+        const rawNotes = notesIndex !== -1 ? (row[notesIndex] || '').trim() : '';
+
         const transaction = {
             id: idIndex !== -1 && row[idIndex] ? parseInt(row[idIndex]) : Date.now() + i,
             type: typeIndex !== -1 ? (row[typeIndex] || '').trim().toLowerCase() : 'expense',
             amount: Math.abs(amount),
             category: categoryIndex !== -1 ? (row[categoryIndex] || '').trim() : 'Other Expense',
             date: rawDate,
-            notes: notesIndex !== -1 ? (row[notesIndex] || '').trim() : '',
+            notes: sanitizeHTML(rawNotes),  // v3.10.2 - Sanitize notes from CSV
             createdAt: createdAtIndex !== -1 && row[createdAtIndex] ? row[createdAtIndex].trim() : new Date().toISOString()
         };
 
@@ -2197,8 +2199,8 @@ function importFromCSV(text) {
         const rawType = typeIndex !== -1 ? (row[typeIndex] || '').trim().toLowerCase() : 'expense';
         const type = rawType === 'income' ? 'income' : 'expense';
         const baseCategory = (row[categoryIndex] || '').trim();
-        const notes = notesIndex !== -1 ? (row[notesIndex] || '').trim() : '';
-        const category = normalizeImportedCategory(baseCategory, notes, type);
+        const rawNotes = notesIndex !== -1 ? (row[notesIndex] || '').trim() : '';
+        const category = normalizeImportedCategory(baseCategory, rawNotes, type);
 
         transactions.unshift({
             id: startId + i,
@@ -2206,7 +2208,7 @@ function importFromCSV(text) {
             amount: Math.abs(amount),
             category,
             date: normalizedDate,
-            notes,
+            notes: sanitizeHTML(rawNotes),  // v3.10.2 - Sanitize notes from CSV
             createdAt: nowIso
         });
         added += 1;
