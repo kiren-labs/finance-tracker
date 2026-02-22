@@ -17,6 +17,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.10.3] - 2026-02-23
+
+### Added
+- **User Feedback System** - Easy ways for users to provide feedback
+  - GitHub Issues integration for bug reports, feature requests, and general feedback
+  - Pre-configured issue templates (bug report, feature request, general feedback)
+  - Email fallback for users without GitHub accounts
+  - Feedback button in header navigation for easy access
+  - Modal with organized feedback options
+
+### Technical
+- New feedback modal UI component with responsive design
+- New functions: `openFeedbackModal()`, `closeFeedbackModal()`
+- GitHub issue templates in `.github/ISSUE_TEMPLATE/`
+- Feedback modal styled to match app design system
+- Mobile-responsive feedback interface
+
+---
+
 ## [3.10.2] - 2026-02-20
 
 ### Added
