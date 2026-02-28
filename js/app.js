@@ -2,10 +2,10 @@
 // App Entry Point — Initialisation, Event Bindings, Service Worker
 // ============================================================================
 
-import { state } from './state.js';
+import { state, currencies } from './state.js';
 import { showMessage } from './utils.js';
 import { initDB, migrateFromLocalStorage, loadDataFromDB, saveTransactionToDB } from './db.js';
-import { currencies, setCurrency, updateCurrencyDisplay, toggleCurrencySelector, closeCurrencySelector, getCurrency } from './currency.js';
+import { setCurrency, updateCurrencyDisplay, toggleCurrencySelector, closeCurrencySelector, getCurrency } from './currency.js';
 import { validateTransaction } from './validation.js';
 import {
     updateUI, switchTab, quickAddTransaction, toggleSummaryCollapse, loadSummaryState,
