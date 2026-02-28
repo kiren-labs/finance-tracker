@@ -43,7 +43,9 @@ export function loadDataFromDB() {
 
         request.onsuccess = () => {
             state.transactions = request.result || [];
-            state.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Cache timestamps for fast numeric sorting
+            state.transactions.forEach(t => { t.dateTs = new Date(t.date).getTime(); });
+            state.transactions.sort((a, b) => b.dateTs - a.dateTs);
             resolve(state.transactions);
         };
 

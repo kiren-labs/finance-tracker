@@ -284,6 +284,8 @@ function bindFormSubmit() {
         }
 
         const sanitizedTransaction = validation.sanitized;
+        // Cache timestamp for fast sorting
+        sanitizedTransaction.dateTs = new Date(sanitizedTransaction.date).getTime();
 
         try {
             await saveTransactionToDB(sanitizedTransaction);

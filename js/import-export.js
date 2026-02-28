@@ -51,9 +51,9 @@ export function exportToCSV() {
 
 function generateBackupMetadata() {
     const count = state.transactions.length;
-    const dates = state.transactions.map(t => new Date(t.date)).sort((a, b) => a - b);
-    const oldestDate = dates.length > 0 ? dates[0].toISOString().slice(0, 10) : '';
-    const newestDate = dates.length > 0 ? dates[dates.length - 1].toISOString().slice(0, 10) : '';
+    const dates = state.transactions.map(t => t.dateTs || new Date(t.date).getTime()).sort((a, b) => a - b);
+    const oldestDate = dates.length > 0 ? new Date(dates[0]).toISOString().slice(0, 10) : '';
+    const newestDate = dates.length > 0 ? new Date(dates[dates.length - 1]).toISOString().slice(0, 10) : '';
     const dateRange = dates.length > 0 ? `${oldestDate} to ${newestDate}` : 'No transactions';
     const backupDate = new Date().toISOString();
     const currencyCode = getCurrency();
@@ -410,8 +410,9 @@ export async function confirmRestore() {
 
         if (newTransactions.length > 0) {
             await bulkSaveTransactionsToDB(newTransactions);
+            newTransactions.forEach(t => { t.dateTs = new Date(t.date).getTime(); });
             state.transactions.push(...newTransactions);
-            state.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            state.transactions.sort((a, b) => b.dateTs - a.dateTs);
         }
 
         stats.currentTotal = state.transactions.length;
