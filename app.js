@@ -20,6 +20,7 @@ let editingId = null;
 let deleteId = null;
 let updateAvailable = false;
 let lastBackupTimestamp = null; // Backup tracking (v3.9.0)
+let pendingRestoreData = null; // Restore preview data (was window._pendingRestoreData)
 
 // Pagination
 let currentPage = 1;
@@ -399,21 +400,7 @@ async function migrateFromLocalStorage() {
     localStorage.setItem('idb_migrated', 'true');
 }
 
-// Load data from localStorage
-function loadData() {
-    const stored = localStorage.getItem('transactions');
-    if (stored) {
-        transactions = JSON.parse(stored);
-        // Sort by date descending (newest first)
-        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
-    updateUI();
-}
-
-// Save data to localStorage
-function saveData() {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-}
+// [REMOVED in refactor/app-js-p0] loadData() and saveData() — dead code after IndexedDB migration
 
 // Set today's date as default
 document.getElementById('date').valueAsDate = new Date();
@@ -557,27 +544,42 @@ function showMessage(text) {
     setTimeout(() => msg.classList.remove('show'), 2000);
 }
 
-// Update UI
+// Update UI — only refresh the active tab + summary (P1: lazy-render)
 function updateUI() {
     updateSummary();
-    updateTransactionsList();
+
+    // Always update filters (lightweight)
     updateMonthFilters();
     updateCategoryFilter();
-    updateGroupedView();
+
+    // Only render the visible tab's content
+    switch (currentTab) {
+        case 'list':
+            updateTransactionsList();
+            break;
+        case 'groups':
+            updateGroupedView();
+            break;
+        case 'settings':
+            updateSettingsContent();
+            break;
+        // 'add' tab has no dynamic list to refresh
+    }
 }
 
-// Update summary cards
+// Update summary cards (P1: single-pass aggregation)
 function updateSummary() {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const monthTxs = transactions.filter(t => t.date.startsWith(currentMonth));
 
-    const income = monthTxs
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const expense = monthTxs
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
+    // Single-pass aggregation instead of 3× filter+reduce
+    const { income, expense, count } = transactions.reduce((acc, t) => {
+        if (t.date.startsWith(currentMonth)) {
+            acc.count++;
+            if (t.type === 'income') acc.income += t.amount;
+            else acc.expense += t.amount;
+        }
+        return acc;
+    }, { income: 0, expense: 0, count: 0 });
 
     const net = income - expense;
 
@@ -597,7 +599,7 @@ function updateSummary() {
     // This Month card should always be neutral (blue), not colored
     // Only the trend indicator should be colored
 
-    document.getElementById('totalEntries').textContent = monthTxs.length;
+    document.getElementById('totalEntries').textContent = count;
     document.getElementById('monthIncome').textContent = formatCurrency(income);
     document.getElementById('monthExpense').textContent = formatCurrency(expense);
 
@@ -634,7 +636,7 @@ function updateSummary() {
     compactNetElem.textContent = formatCurrency(net);
     compactNetElem.className = 'compact-stat ' + (net >= 0 ? 'compact-income' : 'compact-expense');
 
-    document.getElementById('compactEntries').textContent = monthTxs.length;
+    document.getElementById('compactEntries').textContent = count;
     document.getElementById('compactIncome').textContent = formatCurrency(income);
     document.getElementById('compactExpense').textContent = formatCurrency(expense);
 }
@@ -687,8 +689,8 @@ function updateTransactionsList() {
                     ${icon}
                 </div>
                 <div class="transaction-details">
-                    <div class="transaction-category">${t.category}</div>
-                    ${t.notes ? `<div class="transaction-note">${t.notes}</div>` : ''}
+                    <div class="transaction-category">${sanitizeHTML(t.category)}</div>
+                    ${t.notes ? `<div class="transaction-note">${sanitizeHTML(t.notes)}</div>` : ''}
                     <div class="transaction-date">${formatDate(t.date)}</div>
                 </div>
                 <div class="transaction-amount ${amountClass}">
@@ -941,9 +943,19 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById(tab + 'Tab').classList.add('active');
 
-    // Populate backup status and FAQ when switching to settings (v3.9.0)
-    if (tab === 'settings') {
-        updateSettingsContent();
+    // Refresh the newly visible tab's content (P1: lazy-render)
+    switch (tab) {
+        case 'list':
+            updateTransactionsList();
+            updateMonthFilters();
+            updateCategoryFilter();
+            break;
+        case 'groups':
+            updateGroupedView();
+            break;
+        case 'settings':
+            updateSettingsContent();
+            break;
     }
 }
 
@@ -1884,15 +1896,16 @@ function handleImport(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
         try {
-            const result = importFromCSV(reader.result);
+            const result = await importFromCSV(reader.result);
             if (result.added === 0) {
                 showMessage('No valid rows to import.');
                 return;
             }
             showMessage(`Imported ${result.added} transaction(s)` + (result.skipped ? ` • Skipped ${result.skipped}` : ''));
         } catch (err) {
+            console.error('Import failed:', err);
             showMessage('Import failed. Check the CSV format.');
         }
     };
@@ -1922,7 +1935,7 @@ function handleRestore(event) {
             }
 
             // Store backup data temporarily for preview
-            window._pendingRestoreData = backupData;
+            pendingRestoreData = backupData;
 
             // Show preview modal
             showRestorePreview(backupData);
@@ -2073,7 +2086,7 @@ function isDuplicateTransaction(newTransaction, existingTransactions) {
 function closeRestorePreview() {
     const modal = document.getElementById('restorePreviewModal');
     modal.classList.remove('show');
-    window._pendingRestoreData = null;
+    pendingRestoreData = null;
 }
 
 // Close restore report modal
@@ -2098,7 +2111,7 @@ function showRestoreReport(stats) {
 
 // Confirm and execute restore (Merge Mode with Duplicate Detection)
 async function confirmRestore() {
-    const backupData = window._pendingRestoreData;
+    const backupData = pendingRestoreData;
     if (!backupData) return;
 
     // Close preview modal
@@ -2163,7 +2176,7 @@ async function confirmRestore() {
     }
 }
 
-function importFromCSV(text) {
+async function importFromCSV(text) {
     const rows = parseCSV(text).filter(row => row.some(cell => cell.trim() !== ''));
     if (rows.length < 2) {
         return { added: 0, skipped: rows.length };
@@ -2184,6 +2197,7 @@ function importFromCSV(text) {
     let skipped = 0;
     const nowIso = new Date().toISOString();
     const startId = Date.now();
+    const newTransactions = []; // P0: collect only new rows
 
     rows.slice(1).forEach((row, i) => {
         const rawDate = (row[dateIndex] || '').trim();
@@ -2203,7 +2217,7 @@ function importFromCSV(text) {
         const rawNotes = notesIndex !== -1 ? (row[notesIndex] || '').trim() : '';
         const category = normalizeImportedCategory(baseCategory, rawNotes, type);
 
-        transactions.unshift({
+        const txn = {
             id: startId + i,
             type,
             amount: Math.abs(amount),
@@ -2211,16 +2225,17 @@ function importFromCSV(text) {
             date: normalizedDate,
             notes: sanitizeHTML(rawNotes),  // v3.10.2 - Sanitize notes from CSV
             createdAt: nowIso
-        });
+        };
+
+        newTransactions.push(txn);
+        transactions.unshift(txn);
         added += 1;
     });
 
-    if (added > 0) {
-        bulkSaveTransactionsToDB(transactions).then(() => {
-            updateUI();
-        }).catch(err => {
-            console.error('Bulk save failed:', err);
-        });
+    // P0: Save only newly imported transactions (not the entire array)
+    if (newTransactions.length > 0) {
+        await bulkSaveTransactionsToDB(newTransactions);
+        updateUI();
     }
 
     return { added, skipped };
