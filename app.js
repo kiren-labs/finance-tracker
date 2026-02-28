@@ -26,6 +26,35 @@ let pendingRestoreData = null; // Restore preview data (was window._pendingResto
 let currentPage = 1;
 const itemsPerPage = 20;
 
+// P1: Cached DOM references (populated once on first use)
+let _dom = null;
+function getDOM() {
+    if (!_dom) {
+        _dom = {
+            monthNet: document.getElementById('monthNet'),
+            totalEntries: document.getElementById('totalEntries'),
+            monthIncome: document.getElementById('monthIncome'),
+            monthExpense: document.getElementById('monthExpense'),
+            monthNetTrend: document.getElementById('monthNetTrend'),
+            monthIncomeTrend: document.getElementById('monthIncomeTrend'),
+            monthExpenseMeta: document.getElementById('monthExpenseMeta'),
+            compactNet: document.getElementById('compactNet'),
+            compactEntries: document.getElementById('compactEntries'),
+            compactIncome: document.getElementById('compactIncome'),
+            compactExpense: document.getElementById('compactExpense'),
+            transactionsList: document.getElementById('transactionsList'),
+            paginationControls: document.getElementById('paginationControls'),
+            pageInfo: document.getElementById('pageInfo'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            monthFilters: document.getElementById('monthFilters'),
+            categoryFilter: document.getElementById('categoryFilter'),
+            groupedContent: document.getElementById('groupedContent'),
+        };
+    }
+    return _dom;
+}
+
 // Category definitions
 const categories = {
     income: [
@@ -593,58 +622,56 @@ function updateSummary() {
     const expensePercent = calculateExpensePercentage(expense, income);
 
     // Update full summary cards
-    document.getElementById('monthNet').textContent = formatCurrency(net);
-    document.getElementById('monthNet').className = 'summary-value';
+    const $ = getDOM();
+    $.monthNet.textContent = formatCurrency(net);
+    $.monthNet.className = 'summary-value';
 
     // This Month card should always be neutral (blue), not colored
     // Only the trend indicator should be colored
 
-    document.getElementById('totalEntries').textContent = count;
-    document.getElementById('monthIncome').textContent = formatCurrency(income);
-    document.getElementById('monthExpense').textContent = formatCurrency(expense);
+    $.totalEntries.textContent = count;
+    $.monthIncome.textContent = formatCurrency(income);
+    $.monthExpense.textContent = formatCurrency(expense);
 
     // Update This Month trend
-    const monthNetTrend = document.getElementById('monthNetTrend');
     if (netDelta && netDelta.pct !== null) {
         const sign = netDelta.abs >= 0 ? '+' : '';
-        monthNetTrend.innerHTML = `<i class="ri-arrow-${netDelta.direction === 'up' ? 'up' : netDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(netDelta.pct).toFixed(1)}% vs last month`;
-        monthNetTrend.className = `summary-trend ${netDelta.direction === 'up' ? 'positive' : netDelta.direction === 'down' ? 'negative' : 'neutral'}`;
+        $.monthNetTrend.innerHTML = `<i class="ri-arrow-${netDelta.direction === 'up' ? 'up' : netDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(netDelta.pct).toFixed(1)}% vs last month`;
+        $.monthNetTrend.className = `summary-trend ${netDelta.direction === 'up' ? 'positive' : netDelta.direction === 'down' ? 'negative' : 'neutral'}`;
     } else {
-        monthNetTrend.textContent = '';
+        $.monthNetTrend.textContent = '';
     }
 
     // Update Income trend (optional)
-    const monthIncomeTrend = document.getElementById('monthIncomeTrend');
     if (incomeDelta && incomeDelta.pct !== null) {
         const sign = incomeDelta.abs >= 0 ? '+' : '';
-        monthIncomeTrend.innerHTML = `<i class="ri-arrow-${incomeDelta.direction === 'up' ? 'up' : incomeDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(incomeDelta.pct).toFixed(1)}% vs last month`;
-        monthIncomeTrend.className = `summary-trend ${incomeDelta.direction === 'up' ? 'positive' : incomeDelta.direction === 'down' ? 'negative' : 'neutral'}`;
+        $.monthIncomeTrend.innerHTML = `<i class="ri-arrow-${incomeDelta.direction === 'up' ? 'up' : incomeDelta.direction === 'down' ? 'down' : 'right'}-line"></i> ${sign}${Math.abs(incomeDelta.pct).toFixed(1)}% vs last month`;
+        $.monthIncomeTrend.className = `summary-trend ${incomeDelta.direction === 'up' ? 'positive' : incomeDelta.direction === 'down' ? 'negative' : 'neutral'}`;
     } else {
-        monthIncomeTrend.textContent = '';
+        $.monthIncomeTrend.textContent = '';
     }
 
     // Update Expenses meta (% of income)
-    const monthExpenseMeta = document.getElementById('monthExpenseMeta');
     if (expensePercent !== null) {
-        monthExpenseMeta.textContent = `${expensePercent.toFixed(1)}% of income`;
+        $.monthExpenseMeta.textContent = `${expensePercent.toFixed(1)}% of income`;
     } else {
-        monthExpenseMeta.textContent = '';
+        $.monthExpenseMeta.textContent = '';
     }
 
     // Update compact summary view
-    const compactNetElem = document.getElementById('compactNet');
-    compactNetElem.textContent = formatCurrency(net);
-    compactNetElem.className = 'compact-stat ' + (net >= 0 ? 'compact-income' : 'compact-expense');
+    $.compactNet.textContent = formatCurrency(net);
+    $.compactNet.className = 'compact-stat ' + (net >= 0 ? 'compact-income' : 'compact-expense');
 
-    document.getElementById('compactEntries').textContent = count;
-    document.getElementById('compactIncome').textContent = formatCurrency(income);
-    document.getElementById('compactExpense').textContent = formatCurrency(expense);
+    $.compactEntries.textContent = count;
+    $.compactIncome.textContent = formatCurrency(income);
+    $.compactExpense.textContent = formatCurrency(expense);
 }
 
 // Update transactions list
 function updateTransactionsList() {
-    const list = document.getElementById('transactionsList');
-    const paginationControls = document.getElementById('paginationControls');
+    const $ = getDOM();
+    const list = $.transactionsList;
+    const paginationControls = $.paginationControls;
     let filtered = transactions;
 
     if (selectedMonth !== 'all') {
@@ -707,10 +734,10 @@ function updateTransactionsList() {
     // Update pagination controls
     if (filtered.length > itemsPerPage) {
         paginationControls.style.display = 'block';
-        document.getElementById('pageInfo').textContent =
+        $.pageInfo.textContent =
             `Page ${currentPage} of ${totalPages} (${filtered.length} transactions)`;
-        document.getElementById('prevBtn').disabled = currentPage === 1;
-        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        $.prevBtn.disabled = currentPage === 1;
+        $.nextBtn.disabled = currentPage === totalPages;
     } else {
         paginationControls.style.display = 'none';
     }
@@ -721,7 +748,7 @@ function updateMonthFilters() {
     const months = [...new Set(transactions.map(t => t.date.slice(0, 7)))];
     months.sort().reverse();
 
-    const filters = document.getElementById('monthFilters');
+    const filters = getDOM().monthFilters;
     filters.innerHTML = `
         <button class="filter-btn ${selectedMonth === 'all' ? 'active' : ''}"
                 onclick="filterByMonth('all')">All</button>
@@ -771,7 +798,7 @@ function updateCategoryFilter() {
     const categories = [...new Set(transactions.map(t => t.category))];
     categories.sort();
 
-    const filter = document.getElementById('categoryFilter');
+    const filter = getDOM().categoryFilter;
     filter.innerHTML = `
         <option value="all">All Categories</option>
         ${categories.map(cat => `
@@ -789,7 +816,7 @@ function filterByCategory() {
 
 // Update grouped view
 function updateGroupedView() {
-    const content = document.getElementById('groupedContent');
+    const content = getDOM().groupedContent;
 
     if (transactions.length === 0) {
         content.innerHTML = `
