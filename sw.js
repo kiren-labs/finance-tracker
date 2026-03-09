@@ -1,8 +1,8 @@
 // Service Worker for FinChronicle - Offline-first PWA
-// Version: 3.10.3
+// Version: 3.10.4
 
-const CACHE_NAME = 'finchronicle-v3.10.3';
-const CACHE_VERSION = '3.10.3';
+const CACHE_NAME = 'finchronicle-v3.10.4';
+const CACHE_VERSION = '3.10.4';
 
 // Critical files for offline functionality
 const CACHE_URLS = [

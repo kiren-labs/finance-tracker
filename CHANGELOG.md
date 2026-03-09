@@ -17,6 +17,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.10.4] - 2026-03-09
+
+### Added
+- **Import/Export Functionality** - CSV support for transactions
+  - Export all transactions to CSV format
+  - Import transactions from CSV files with validation
+  - Data integrity checks during import process
+
+- **Modular JavaScript Architecture** - Refactored monolithic app.js into ES modules
+  - Lazy loading for FAQ and Import/Export modules to enhance performance
+  - Streamlined imports for better module management
+  - Comprehensive event binding system replacing inline handlers
+
+### Technical
+- New functions: `exportToCSV()`, `importFromCSV()`, `validateCSVData()`
+- Optimized transaction date handling with cached timestamps for improved sorting
+- Updated dark mode styles for improved token management and consistency
+- Added text color variable to body and select elements for consistent styling
+- Service worker registration and database integration
+- Shared application state management across modules
+- UI rendering utilities and transaction validation functions
+
+### Improved
+- Removed inline event handlers from all UI elements (bottom navigation, settings buttons, currency selector, tab navigation, summary cards, modal buttons) for better separation of concerns
+- Enhanced performance through lazy loading and optimized date handling
+- Better code maintainability with modular architecture
+
+---
+
 ## [3.10.3] - 2026-02-23
 
 ### Added
