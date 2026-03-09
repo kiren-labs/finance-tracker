@@ -29,17 +29,28 @@ export function validateTransaction(transaction) {
     }
 
     // 4. Date validation
-    const date = new Date(transaction.date);
-    if (isNaN(date.getTime())) {
+    // Check format and parse components
+    const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!transaction.date || !dateFormatRegex.test(transaction.date)) {
         errors.push({ field: 'date', message: 'Invalid date format' });
     } else {
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-        if (date > today) {
-            errors.push({ field: 'date', message: 'Future dates are not allowed' });
-        }
-        if (date < new Date('1900-01-01')) {
-            errors.push({ field: 'date', message: 'Date is too far in the past' });
+        const date = new Date(transaction.date);
+        // Verify the date is valid and components match input
+        const [year, month, day] = transaction.date.split('-').map(Number);
+        if (isNaN(date.getTime()) ||
+            date.getFullYear() !== year ||
+            date.getMonth() + 1 !== month ||
+            date.getDate() !== day) {
+            errors.push({ field: 'date', message: 'Invalid date format' });
+        } else {
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            if (date > today) {
+                errors.push({ field: 'date', message: 'Future dates are not allowed' });
+            }
+            if (date < new Date('1900-01-01')) {
+                errors.push({ field: 'date', message: 'Date is too far in the past' });
+            }
         }
     }
 
