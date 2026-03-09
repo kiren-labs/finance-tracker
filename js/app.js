@@ -15,16 +15,32 @@ import {
     openFeedbackModal, closeFeedbackModal
 } from './ui.js';
 import {
-    exportToCSV, createBackup, triggerImport, handleImport,
-    triggerRestore, handleRestore, confirmRestore,
-    closeRestorePreview, closeRestoreReport
-} from './import-export.js';
-import { toggleFAQSection, toggleFAQItem, scrollToFAQ } from './faq.js';
-import {
     toggleDarkMode, loadDarkMode, hideInstallPrompt, checkInstallPrompt,
     checkAppVersion, checkForUpdates, reloadApp, dismissUpdate,
     loadBackupTimestamp, showUpdatePrompt, updateSettingsContent
 } from './settings.js';
+
+// ============================================================================
+// Lazy-loading for optional features (FAQ, Import/Export)
+// ============================================================================
+
+// Lazy-load FAQ module
+let faqModule = null;
+async function getFAQModule() {
+    if (!faqModule) {
+        faqModule = await import('./faq.js');
+    }
+    return faqModule;
+}
+
+// Lazy-load Import/Export module
+let importExportModule = null;
+async function getImportExportModule() {
+    if (!importExportModule) {
+        importExportModule = await import('./import-export.js');
+    }
+    return importExportModule;
+}
 
 // ============================================================================
 // Event Bindings (replaces all inline onclick/onchange/onkeydown in HTML)
@@ -127,15 +143,27 @@ function bindStaticEvents() {
 
     // ---- Restore Preview modal buttons ----
     document.querySelectorAll('#restorePreviewModal .modal-btn-cancel')
-        .forEach(btn => btn.addEventListener('click', closeRestorePreview));
+        .forEach(btn => btn.addEventListener('click', async () => {
+            const mod = await getImportExportModule();
+            mod.closeRestorePreview();
+        }));
     document.querySelector('#restorePreviewModal .modal-btn-confirm')
-        .addEventListener('click', confirmRestore);
+        .addEventListener('click', async () => {
+            const mod = await getImportExportModule();
+            mod.confirmRestore();
+        });
 
     // ---- Restore Report modal ----
     document.querySelector('#restoreReportModal .modal-btn-confirm')
-        .addEventListener('click', closeRestoreReport);
+        .addEventListener('click', async () => {
+            const mod = await getImportExportModule();
+            mod.closeRestoreReport();
+        });
     document.querySelector('#restoreReportModal .close-btn')
-        .addEventListener('click', closeRestoreReport);
+        .addEventListener('click', async () => {
+            const mod = await getImportExportModule();
+            mod.closeRestoreReport();
+        });
 
     // ---- Feedback modal close ----
     document.querySelector('#feedbackModal .close-btn')
@@ -143,21 +171,42 @@ function bindStaticEvents() {
 
     // ---- Restore Preview modal close (X button) ----
     document.querySelector('#restorePreviewModal .close-btn')
-        .addEventListener('click', closeRestorePreview);
+        .addEventListener('click', async () => {
+            const mod = await getImportExportModule();
+            mod.closeRestorePreview();
+        });
 
     // ---- Hidden file inputs ----
     document.getElementById('importFile')
-        .addEventListener('change', handleImport);
+        .addEventListener('change', async (e) => {
+            const mod = await getImportExportModule();
+            mod.handleImport(e);
+        });
     document.getElementById('restoreFile')
-        .addEventListener('change', handleRestore);
+        .addEventListener('change', async (e) => {
+            const mod = await getImportExportModule();
+            mod.handleRestore(e);
+        });
 }
 
 function bindSettingsButtons() {
     const actions = {
-        'Export CSV': exportToCSV,
-        'Import CSV': triggerImport,
-        'Create Backup': createBackup,
-        'Restore from Backup': triggerRestore,
+        'Export CSV': async () => {
+            const mod = await getImportExportModule();
+            mod.exportToCSV();
+        },
+        'Import CSV': async () => {
+            const mod = await getImportExportModule();
+            mod.triggerImport();
+        },
+        'Create Backup': async () => {
+            const mod = await getImportExportModule();
+            mod.createBackup();
+        },
+        'Restore from Backup': async () => {
+            const mod = await getImportExportModule();
+            mod.triggerRestore();
+        },
         'Check for updates': checkForUpdates,
         'Change currency': toggleCurrencySelector,
         'Toggle dark mode': toggleDarkMode,
@@ -204,26 +253,33 @@ function bindDelegatedEvents() {
         showMessage(`Currency changed to ${currencies[code].name}`);
     });
 
-    // FAQ sections & items (delegated from faqContainer)
-    document.getElementById('faqContainer').addEventListener('click', (e) => {
+    // FAQ sections & items (delegated from faqContainer) - Lazy-loaded
+    document.getElementById('faqContainer').addEventListener('click', async (e) => {
+        const mod = await getFAQModule();
         const sectionHeader = e.target.closest('[data-faq-section]');
         if (sectionHeader) {
-            toggleFAQSection(Number(sectionHeader.dataset.faqSection));
+            mod.toggleFAQSection(Number(sectionHeader.dataset.faqSection));
             return;
         }
         const questionBtn = e.target.closest('[data-faq-item]');
         if (questionBtn) {
             const [section, item] = questionBtn.dataset.faqItem.split('-').map(Number);
-            toggleFAQItem(section, item);
+            mod.toggleFAQItem(section, item);
         }
     });
 
-    // Backup status container: export & scrollToFAQ actions
-    document.getElementById('backupStatusContainer').addEventListener('click', (e) => {
+    // Backup status container: export & scrollToFAQ actions - Lazy-loaded
+    document.getElementById('backupStatusContainer').addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action]');
         if (!btn) return;
-        if (btn.dataset.action === 'exportBackup') exportToCSV();
-        if (btn.dataset.action === 'scrollToFAQ') scrollToFAQ();
+        if (btn.dataset.action === 'exportBackup') {
+            const mod = await getImportExportModule();
+            mod.exportToCSV();
+        }
+        if (btn.dataset.action === 'scrollToFAQ') {
+            const mod = await getFAQModule();
+            mod.scrollToFAQ();
+        }
     });
 }
 
